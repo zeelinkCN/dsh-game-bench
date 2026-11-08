@@ -19,16 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Third-party components
-
-1. jsnes 2.1.0 — https://github.com/bfirsh/jsnes
-   Distributed unmodified as vendor/jsnes.min.js under the Apache License 2.0.
-   Full text: vendor/LICENSE-jsnes.txt
-
-2. Built-in NES ROMs and cover art under games/ are NOT covered by this license.
-   They come from the plugin owner's private, explicitly authorized backup
-   library (zeelinkCN/game-bench-library) and are for local personal use only.
-   See BUILTIN-GAMES.md before redistributing this package.
