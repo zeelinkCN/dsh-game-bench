@@ -4,7 +4,7 @@ DSH（DeepSeek Harness）插件：左侧栏一个手柄图标，点开就是一�
 
 仓库：<https://github.com/zeelinkCN/dsh-game-bench> · 许可：MIT
 
-- **打开即玩**：面板一开就是游戏库，点卡片立刻开局；内置游戏随包分发，断网也能玩（公开版附带作者原创像素 demo，见 `BUILTIN-GAMES.md` 配置自己的经典游戏）。
+- **打开即玩**：面板一开就是游戏库，8 款内置游戏随包分发（7 款经典 + 原创 demo），断网也能玩。
 - **内置游戏市场**：接 `zeelinkCN/game-bench-library`（1100+ 款、带封面与 SHA-256），按合集/搜索挑选，点一下下载安装，装完立刻开玩；ROM 与封面落盘缓存，之后离线可玩。
 - **真模拟器**：jsnes 2.1.0 在浏览器里跑 60fps（实测 0.9ms/帧），Web Audio 立体声、键盘/手柄、4 个存档槽（含自动存档）、倍速、CRT 滤镜、截图、全屏。
 - **跨平台**：macOS / Windows / Linux 同一份代码，只要有 DSH Web UI 就能玩。存档在浏览器 IndexedDB。
@@ -95,10 +95,11 @@ node dsh-game-bench/selftest/real-api.mjs # 真实 Host 路由验收（插件已
 
 ## 内置游戏与素材
 
-- 本公开仓库**不包含任何受版权保护的游戏 ROM**。`games/` 只跟随作者的原创 demo
-  **星光试航 Star Pilot**（`starpilot.nes`，由 `make_demo.py` 程序生成，可自由分发）。
-- 想在自己的机器上内置经典游戏：从你有权使用的资源库生成私有清单
-  （见 `BUILTIN-GAMES.md`），生成物被 `.gitignore` 排除，不会污染公开仓库。
+- `games/` 内置 **8 款**：7 款经典红白机游戏（超级玛丽、魂斗罗、赤色要塞、雪人兄弟、坦克大战、
+  松鼠大作战、双截龙2）+ 作者原创 demo **星光试航 Star Pilot**。ROM/封面随仓库分发，断网可玩。
+- 这 7 款经典 ROM 是第三方发行公司的版权作品，**不由 MIT 许可覆盖**；收录依据是
+  仓库所有者已取得各发行公司的再分发许可并已付费的声明，详见 **`GAME-RIGHTS.md`**。
+  第三方使用/再分发这些游戏文件前请自行确认已获得权利人许可；权利人有异议请联系移除。
 - `vendor/jsnes.min.js`：jsnes 2.1.0，Apache-2.0（`vendor/LICENSE-jsnes.txt`），未修改。
 - 市场目录与封面来自 `zeelinkCN/game-bench-library`，按其授权使用。
 - 第三方组件与授权明细：`THIRD-PARTY.md`。

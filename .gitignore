@@ -1,14 +1,11 @@
-# 本机私有内置游戏（版权内容，绝不入库）
-# 私有 ROM/封面统一以 nes-<sha256> 命名；公开发布的 demo（starpilot.*）保持跟踪
-games/nes-*.nes
-games/nes-*.png
-games/builtin.local.json
-
 # 验收产物
 selftest/tmp/
 selftest/shots/
 selftest/*.log
 *.log
+
+# 本机追加的私有内置清单（可选，不影响公开的 games/builtin.json）
+games/builtin.local.json
 
 # 系统/依赖
 node_modules/

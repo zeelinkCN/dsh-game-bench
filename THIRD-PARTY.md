@@ -21,8 +21,11 @@ The in-panel game market reads a separate, private resource repository
 Those assets are **not** part of this repository and are not covered by the MIT
 license; they are used under the repository owner's authorization.
 
-## Classic NES games on the author's machine
+## Built-in classic NES games
 
-A local install may additionally contain copyright-protected game backups
-configured through `games/builtin.local.json`. Those files are excluded from
-git (see `.gitignore` and `BUILTIN-GAMES.md`) and are not distributed here.
+`games/nes-<sha256>.nes` and their cover art are copyright works of their original
+publishers (Nintendo, Konami, Toaplan, Namco, Capcom, Technos Japan). They are **not**
+covered by this repository's MIT license. Their inclusion follows the repository
+owner's declaration that redistribution permission for these titles was obtained from
+the rights holders and paid for — see **`GAME-RIGHTS.md`**. Third parties must obtain
+their own permission before using these files; rights holders may request removal.

@@ -1,7 +1,126 @@
 {
-  "version": 1,
-  "note": "可公开分发的内置游戏：仅作者原创 demo",
+  "version": 2,
+  "note": "内置游戏清单：7 款经典（再分发授权声明见 GAME-RIGHTS.md）+ 作者原创 demo",
   "games": [
+    {
+      "id": "nes-ec299b990e8bfee8ba46e3f61d63b2e1ae5b8a2e431de84e2e4bbd692dc53586",
+      "title": "超级玛丽1",
+      "file": "nes-ec299b990e8bfee8ba46e3f61d63b2e1ae5b8a2e431de84e2e4bbd692dc53586.nes",
+      "cover": "nes-ec299b990e8bfee8ba46e3f61d63b2e1ae5b8a2e431de84e2e4bbd692dc53586.png",
+      "sha256": "ec299b990e8bfee8ba46e3f61d63b2e1ae5b8a2e431de84e2e4bbd692dc53586",
+      "size": 40976,
+      "source": "https://github.com/mengfei523060/nesrom",
+      "sourceNames": [
+        "超级玛丽1"
+      ],
+      "author": "用户授权备份",
+      "language": "",
+      "series": "",
+      "distribution": "Private bundle imported with repository owner's authorization",
+      "featuredRank": 1
+    },
+    {
+      "id": "nes-69084b4fe18c505167f71ff48defe7d5f447ffff1a7025d1cb9ac4955fcbff70",
+      "title": "魂斗罗 (简)",
+      "file": "nes-69084b4fe18c505167f71ff48defe7d5f447ffff1a7025d1cb9ac4955fcbff70.nes",
+      "cover": "nes-69084b4fe18c505167f71ff48defe7d5f447ffff1a7025d1cb9ac4955fcbff70.png",
+      "sha256": "69084b4fe18c505167f71ff48defe7d5f447ffff1a7025d1cb9ac4955fcbff70",
+      "size": 393232,
+      "source": "https://github.com/tomiaa12/nesRoms",
+      "sourceNames": [
+        "魂斗罗 (简)"
+      ],
+      "author": "用户授权备份",
+      "language": "zh-label",
+      "series": "",
+      "distribution": "Private bundle imported with repository owner's authorization",
+      "featuredRank": 2
+    },
+    {
+      "id": "nes-701f4d4da8db4566a12cfba194fc823990f808bea70a484b450ec0a6bba496a1",
+      "title": "赤色要塞",
+      "file": "nes-701f4d4da8db4566a12cfba194fc823990f808bea70a484b450ec0a6bba496a1.nes",
+      "cover": "nes-701f4d4da8db4566a12cfba194fc823990f808bea70a484b450ec0a6bba496a1.png",
+      "sha256": "701f4d4da8db4566a12cfba194fc823990f808bea70a484b450ec0a6bba496a1",
+      "size": 131088,
+      "source": "https://github.com/mengfei523060/nesrom",
+      "sourceNames": [
+        "赤色要塞"
+      ],
+      "author": "用户授权备份",
+      "language": "",
+      "series": "",
+      "distribution": "Private bundle imported with repository owner's authorization",
+      "featuredRank": 3
+    },
+    {
+      "id": "nes-1a4d476af6408ebdea11ec0df6a99efba423b5f7138ac0c661455c42dac40070",
+      "title": "雪人兄弟 (简)",
+      "file": "nes-1a4d476af6408ebdea11ec0df6a99efba423b5f7138ac0c661455c42dac40070.nes",
+      "cover": "nes-1a4d476af6408ebdea11ec0df6a99efba423b5f7138ac0c661455c42dac40070.png",
+      "sha256": "1a4d476af6408ebdea11ec0df6a99efba423b5f7138ac0c661455c42dac40070",
+      "size": 262160,
+      "source": "https://github.com/tomiaa12/nesRoms",
+      "sourceNames": [
+        "雪人兄弟 (简)"
+      ],
+      "author": "用户授权备份",
+      "language": "zh-label",
+      "series": "",
+      "distribution": "Private bundle imported with repository owner's authorization",
+      "featuredRank": 4
+    },
+    {
+      "id": "nes-8c556ef60dd3d55b6ea2e6c6d5dae460d808f021dc99368ffc90861ee6417f9b",
+      "title": "坦克大战 (简)",
+      "file": "nes-8c556ef60dd3d55b6ea2e6c6d5dae460d808f021dc99368ffc90861ee6417f9b.nes",
+      "cover": "nes-8c556ef60dd3d55b6ea2e6c6d5dae460d808f021dc99368ffc90861ee6417f9b.png",
+      "sha256": "8c556ef60dd3d55b6ea2e6c6d5dae460d808f021dc99368ffc90861ee6417f9b",
+      "size": 24592,
+      "source": "https://github.com/tomiaa12/nesRoms",
+      "sourceNames": [
+        "坦克大战 (简)"
+      ],
+      "author": "用户授权备份",
+      "language": "zh-label",
+      "series": "",
+      "distribution": "Private bundle imported with repository owner's authorization",
+      "featuredRank": 5
+    },
+    {
+      "id": "nes-b903a9706220881b94b4d24d8fa64620332a870c1590cb827cef8e71ee05e21d",
+      "title": "松鼠大作战 (简)",
+      "file": "nes-b903a9706220881b94b4d24d8fa64620332a870c1590cb827cef8e71ee05e21d.nes",
+      "cover": "nes-b903a9706220881b94b4d24d8fa64620332a870c1590cb827cef8e71ee05e21d.png",
+      "sha256": "b903a9706220881b94b4d24d8fa64620332a870c1590cb827cef8e71ee05e21d",
+      "size": 786464,
+      "source": "https://github.com/tomiaa12/nesRoms",
+      "sourceNames": [
+        "松鼠大作战 (简)"
+      ],
+      "author": "用户授权备份",
+      "language": "zh-label",
+      "series": "",
+      "distribution": "Private bundle imported with repository owner's authorization",
+      "featuredRank": 6
+    },
+    {
+      "id": "nes-02ade1c348b1c7db2b28882c4fba27da69966f5063d8e0f374f909f8dd202749",
+      "title": "双截龙2 - 复仇 (简)",
+      "file": "nes-02ade1c348b1c7db2b28882c4fba27da69966f5063d8e0f374f909f8dd202749.nes",
+      "cover": "nes-02ade1c348b1c7db2b28882c4fba27da69966f5063d8e0f374f909f8dd202749.png",
+      "sha256": "02ade1c348b1c7db2b28882c4fba27da69966f5063d8e0f374f909f8dd202749",
+      "size": 327696,
+      "source": "https://github.com/tomiaa12/nesRoms",
+      "sourceNames": [
+        "双截龙2 - 复仇 (简)"
+      ],
+      "author": "用户授权备份",
+      "language": "zh-label",
+      "series": "",
+      "distribution": "Private bundle imported with repository owner's authorization",
+      "featuredRank": 7
+    },
     {
       "id": "starpilot",
       "title": "星光试航 Star Pilot",
@@ -18,7 +137,7 @@
       "language": "",
       "series": "",
       "distribution": "作者原创 demo，可随插件分发",
-      "featuredRank": 0,
+      "featuredRank": 106,
       "tags": [
         "自研 demo",
         "双人"

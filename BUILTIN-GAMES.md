@@ -1,49 +1,69 @@
-# 内置游戏：公开部分与本机私有部分
+# 内置游戏
 
-## 公开仓库只带一个 demo
+`games/` 随插件分发 **8 款**游戏，断网可玩：
 
-`games/starpilot.nes`（**星光试航 / Star Pilot**）是插件作者自己用程序生成的 NES demo
-（源码见作者另一仓库：`Resources/Demo/StarPilot.nes` 由 `scripts/make_demo.py` 产出），
-可以随 MIT 插件自由分发。它出现在 `games/builtin.json` 里：
+| # | 游戏 | 文件 | 说明 |
+| --- | --- | --- | --- |
+| 1 | 超级玛丽1 | `nes-ec299b99….nes` | 第三方版权作品 |
+| 2 | 魂斗罗（汉化） | `nes-69084b4f….nes` | 第三方版权作品 |
+| 3 | 赤色要塞 | `nes-701f4d4d….nes` | 第三方版权作品 |
+| 4 | 雪人兄弟（汉化） | `nes-1a4d476a….nes` | 第三方版权作品 |
+| 5 | 坦克大战（汉化） | `nes-8c556ef6….nes` | 第三方版权作品 |
+| 6 | 松鼠大作战（汉化） | `nes-b903a970….nes` | 第三方版权作品 |
+| 7 | 双截龙2 复仇（汉化） | `nes-02ade1c3….nes` | 第三方版权作品 |
+| 8 | 星光试航 Star Pilot | `starpilot.nes` | 作者原创 demo（MIT 覆盖） |
+
+## 授权
+
+前 7 款是各发行公司的版权作品，**不由本仓库的 MIT 许可覆盖**。收录依据是仓库所有者
+已取得各发行公司再分发许可并已付费的声明；声明全文、发行公司对照与联系/移除渠道见
+**`GAME-RIGHTS.md`**。任何第三方在再分发这些游戏文件前，必须自行取得权利人许可。
+
+## 清单格式
+
+`games/builtin.json`（v2）：
 
 ```json
-{ "id": "starpilot", "title": "星光试航 Star Pilot", "file": "starpilot.nes", "cover": "starpilot.png", ... }
+{
+  "version": 2,
+  "games": [
+    {
+      "id": "nes-<sha256>",
+      "title": "超级玛丽1",
+      "file": "nes-<sha256>.nes",
+      "cover": "nes-<sha256>.png",
+      "sha256": "<sha256>",
+      "size": 40976,
+      "source": "https://github.com/…",
+      "sourceNames": ["超级玛丽1"],
+      "author": "用户授权备份",
+      "language": "",
+      "series": "",
+      "distribution": "…",
+      "featuredRank": 1
+    }
+  ]
+}
 ```
 
-## 本机私有内置游戏（不入库）
+Host 侧还会读取可选的 `games/builtin.local.json`（`.gitignore` 排除，用于本机追加），
+两份清单按 `id` 合并；文件缺失的条目会被静默跳过。
 
-插件所有者本人另有 7 款经典游戏（超级玛丽、魂斗罗、赤色要塞、雪人兄弟、坦克大战、
-松鼠大作战、双截龙2），来自其**明确授权的私有备份库** `zeelinkCN/game-bench-library`
-（`sources.json` 记录原始来源仓库与提交，`catalog.json` 记录每款 SHA-256）。
+## 校验
 
-它们以如下形式存在，并且**全部被 `.gitignore` 排除**：
+每款的 `sha256` 与 `size` 都可逐字节校验，且与资源库 `owned/<sha256>.nes` 一致：
 
-| 文件 | 说明 |
-| --- | --- |
-| `games/builtin.local.json` | 私有内置清单（7 条），同样字段结构 |
-| `games/nes-<sha256>.nes` | ROM，字节与资源库 `owned/<sha256>.nes` 一致 |
-| `games/nes-<sha256>.png` | 封面，取自资源库 `covers/` 或 `legacy-images/` |
+```sh
+shasum -a 256 games/*.nes
+```
 
-Host 侧会读取 `builtin.json` + `builtin.local.json` 两份清单并合并；条目对应的
-ROM/封面文件不存在时会被静默跳过（所以干净 clone 下只有 demo，不会报错）。
-
-## 如何在自己的机器上生成私有内置清单
+## 追加自己的游戏
 
 ```sh
 GAMEBENCH_LIBRARY_DIR=/path/to/game-bench-library \
   node dsh-game-bench/scripts/pack-builtins.mjs --force
 ```
 
-脚本按 `catalog.json` 的 `featuredRank` 取前 N 款（默认 7），把 ROM/封面拷进 `games/`
-并写 `games/builtin.local.json`。资源库更新后重跑即可；已知 7 个 SHA-256 白名单在脚本里，
-避免资源库更新后静默换游戏。
-
-## 分发限制（重要）
-
-这些经典 ROM 是**受版权保护的游戏备份**，只能安装在所有者本人使用的机器上。
-公开这个插件（GitHub / npm / 应用市场）时**必须**保持它们不被跟踪：
-
-- `.gitignore` 已经排除 `games/nes-*` 与 `games/builtin.local.json`，不要用 `git add -f` 绕过；
-- 不要把 `games/*.png` 里的游戏封面、或 `selftest/shots/` 里的游戏画面截图公开；
-- 插件代码（MIT）与 jsnes 运行时（Apache-2.0）不受限制；
-- demo `starpilot.*` 是作者原创，可以公开。
+脚本按资源库 `catalog.json` 的 `featuredRank` 取前 N 款，拷 ROM/封面到 `games/` 并写
+`games/builtin.local.json`（本机追加，不入库）。要公开新增游戏，请把它们并入
+`games/builtin.json` 并同步更新 `GAME-RIGHTS.md`。
