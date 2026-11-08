@@ -1,0 +1,13 @@
+# 拾光游戏厅（Game Bench）：内置 7 款经典红白机游戏 + 在线游戏市场
+#
+# Host 侧（index.js）提供：
+#   - /game-bench/api/*  游戏库、市场目录、ROM/封面下载与本地缓存、安装状态
+#   - /game-bench/api/vendor/jsnes.js  jsnes 2.1.0 运行时（UMD，原样分发）
+#   - /game-bench/api/engine.js        自研模拟器封装（渲染/音频/输入/存档）
+#
+# Client 侧（client.js）注册两个 slot：
+#   - main（key: game-bench）             整页游戏厅 / 游戏市场 / 播放器
+#   - sidebar.panellist（id: game-bench） 左侧栏入口图标（order: 30）
+- insert:
+    - id: game-bench
+      name: '@local/game-bench'

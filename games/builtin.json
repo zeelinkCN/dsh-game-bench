@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "note": "可公开分发的内置游戏：仅作者原创 demo",
+  "games": [
+    {
+      "id": "starpilot",
+      "title": "星光试航 Star Pilot",
+      "file": "starpilot.nes",
+      "cover": "starpilot.png",
+      "sha256": "92e1e3411b85381812d40380681d5ff458d120995b5d0d6bb55b4fc1c0fb6609",
+      "size": 24592,
+      "source": "https://github.com/zeelinkCN/game-bench-macos (Resources/Demo/StarPilot.nes, 由 scripts/make_demo.py 生成)",
+      "sourceNames": [
+        "Star Pilot",
+        "星光试航"
+      ],
+      "author": "插件作者自制",
+      "language": "",
+      "series": "",
+      "distribution": "作者原创 demo，可随插件分发",
+      "featuredRank": 0,
+      "tags": [
+        "自研 demo",
+        "双人"
+      ]
+    }
+  ]
+}

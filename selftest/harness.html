@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh-CN" data-active-panel="game-bench">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>game-bench client harness</title>
+  <style>
+    /* ------------------------------------------------------------------
+     * DSH 主题 token 的离线快照（light 默认；dark 走 prefers-color-scheme
+     * 或 html[data-theme="dark"] / html.dark，两种切换方式都支持）。
+     * 注意：这是快照；真实 Harness token 随版本变化时需同步。
+     * ------------------------------------------------------------------ */
+    :root {
+      color-scheme: light;
+      --dsw-alias-bg-base: #ffffff;
+      --dsw-alias-bg-layer-1: #ffffff;
+      --dsw-alias-bg-layer-2: #ffffff;
+      --dsw-alias-bg-layer-3: #f9fafb;
+      --dsw-alias-bg-overlay: #ffffff;
+      --dsw-alias-bg-skeleton: rgba(0, 0, 0, .06);
+      --dsw-alias-bg-mask-drop: #272730b3;
+      --dsw-alias-label-primary: #0f1115;
+      --dsw-alias-label-secondary: #61666b;
+      --dsw-alias-label-tertiary: #81858c;
+      --dsw-alias-label-caption: #81858c;
+      --dsw-alias-label-primary-inverted: #353638;
+      --dsw-alias-border-l1: rgba(0, 0, 0, .04);
+      --dsw-alias-border-l2: rgba(0, 0, 0, .1);
+      --dsw-alias-border-l3: rgba(0, 0, 0, .16);
+      --dsw-alias-border-l4: rgba(0, 0, 0, .2);
+      --dsw-alias-brand-primary: #4d6bfe;
+      --dsw-alias-state-success-primary: #22c55e;
+      --dsw-alias-state-warn-primary: #f59e0b;
+      --dsw-alias-state-error-primary: #ec1313;
+      --dsw-alias-fill-tertiary: rgba(0, 0, 0, .08);
+      --dsw-alias-interactive-bg-hover: rgba(0, 0, 0, .05);
+      --dsw-alias-interactive-bg-hover-solid: #f1f3f5;
+      --dsw-alias-button-primary-fill: #4d6bfe;
+      --dsw-alias-button-primary-hover: #353638;
+      --dsw-specific-sidebar-fill: #f9fafb;
+      --dsw-specific-input-major: #ffffff;
+      --dsh-frame-top-clearance: 20px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --dsw-alias-bg-base: #151517;
+        --dsw-alias-bg-layer-1: #232324;
+        --dsw-alias-bg-layer-2: #2c2c2e;
+        --dsw-alias-bg-layer-3: #353638;
+        --dsw-alias-bg-overlay: #2c2c2e;
+        --dsw-alias-bg-skeleton: rgba(255, 255, 255, .08);
+        --dsw-alias-label-primary: #f9fafb;
+        --dsw-alias-label-secondary: #cfd3d6;
+        --dsw-alias-label-tertiary: #adb2b8;
+        --dsw-alias-label-caption: #81858c;
+        --dsw-alias-label-primary-inverted: #2c2c2e;
+        --dsw-alias-border-l1: rgba(255, 255, 255, .06);
+        --dsw-alias-border-l2: rgba(255, 255, 255, .12);
+        --dsw-alias-border-l3: rgba(255, 255, 255, .16);
+        --dsw-alias-border-l4: rgba(255, 255, 255, .2);
+        --dsw-alias-brand-primary: #4d6bfe;
+        --dsw-alias-state-success-primary: #22c55e;
+        --dsw-alias-state-warn-primary: #f59e0b;
+        --dsw-alias-state-error-primary: #f25a5a;
+        --dsw-alias-fill-tertiary: rgba(255, 255, 255, .08);
+        --dsw-alias-interactive-bg-hover: rgba(255, 255, 255, .08);
+        --dsw-alias-interactive-bg-hover-solid: #353638;
+        --dsw-alias-button-primary-fill: #4d6bfe;
+        --dsw-alias-button-primary-hover: #ebeef2;
+        --dsw-specific-sidebar-fill: #1b1b1c;
+        --dsw-specific-input-major: #232324;
+      }
+    }
+    html[data-theme="dark"], html.dark {
+      color-scheme: dark;
+      --dsw-alias-bg-base: #151517;
+      --dsw-alias-bg-layer-1: #232324;
+      --dsw-alias-bg-layer-2: #2c2c2e;
+      --dsw-alias-bg-layer-3: #353638;
+      --dsw-alias-bg-overlay: #2c2c2e;
+      --dsw-alias-bg-skeleton: rgba(255, 255, 255, .08);
+      --dsw-alias-label-primary: #f9fafb;
+      --dsw-alias-label-secondary: #cfd3d6;
+      --dsw-alias-label-tertiary: #adb2b8;
+      --dsw-alias-label-caption: #81858c;
+      --dsw-alias-label-primary-inverted: #2c2c2e;
+      --dsw-alias-border-l1: rgba(255, 255, 255, .06);
+      --dsw-alias-border-l2: rgba(255, 255, 255, .12);
+      --dsw-alias-border-l3: rgba(255, 255, 255, .16);
+      --dsw-alias-border-l4: rgba(255, 255, 255, .2);
+      --dsw-alias-brand-primary: #4d6bfe;
+      --dsw-alias-state-success-primary: #22c55e;
+      --dsw-alias-state-warn-primary: #f59e0b;
+      --dsw-alias-state-error-primary: #f25a5a;
+      --dsw-alias-fill-tertiary: rgba(255, 255, 255, .08);
+      --dsw-alias-interactive-bg-hover: rgba(255, 255, 255, .08);
+      --dsw-alias-interactive-bg-hover-solid: #353638;
+      --dsw-alias-button-primary-fill: #4d6bfe;
+      --dsw-alias-button-primary-hover: #ebeef2;
+      --dsw-specific-sidebar-fill: #1b1b1c;
+      --dsw-specific-input-major: #232324;
+    }
+
+    html, body, #app { height: 100%; margin: 0; }
+    body {
+      background: var(--dsw-alias-bg-base);
+      color: var(--dsw-alias-label-primary);
+      font-family: -apple-system, "SF Pro Display", "PingFang SC", "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    #app { display: flex; height: 100%; overflow: hidden; }
+    #rail {
+      width: 280px; flex: none; box-sizing: border-box;
+      background: var(--dsw-specific-sidebar-fill);
+      border-right: 1px solid var(--dsw-alias-border-l1);
+      display: flex; flex-direction: column; padding: 14px 12px 10px; gap: 6px;
+      transition: width 160ms ease;
+    }
+    #rail.is-rail { width: 56px; padding: 40px 0 10px; align-items: center; }
+    #rail-brand {
+      width: 26px; height: 26px; border-radius: 8px; margin-bottom: 8px;
+      background: color-mix(in srgb, var(--dsw-alias-label-primary) 10%, transparent);
+    }
+    #rail-nav { display: flex; flex-direction: column; gap: 4px; }
+    .rail-item {
+      display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px;
+      color: var(--dsw-alias-label-secondary); font-size: 13px;
+    }
+    .rail-item.is-active { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
+    .rail-dot { width: 16px; height: 16px; border-radius: 5px; background: color-mix(in srgb, currentColor 22%, transparent); }
+    #rail-spacer { flex: 1 1 auto; }
+    #sidebar-icon { display: grid; place-items: center; min-height: 40px; }
+    #sidebar-footer { width: 100%; display: flex; align-items: center; gap: 6px; overflow: visible; }
+    #sidebar-mini-slot {
+      width: 100%; flex: 1 0 100%; max-width: 100%;
+      display: flex; flex-direction: column; align-items: stretch;
+    }
+
+    #main {
+      flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+    }
+    #root {
+      flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    #fake-conversation {
+      flex: 0 0 auto; max-height: 34%; overflow: auto; padding: 10px 18px;
+      border-top: 1px solid var(--dsw-alias-border-l2);
+      background: var(--dsw-alias-bg-layer-3);
+      font-size: 12px; color: var(--dsw-alias-label-secondary); display: flex; flex-direction: column; gap: 6px;
+    }
+    .conv-title { font-weight: 600; color: var(--dsw-alias-label-primary); font-size: 13px; }
+    .conv-msg { padding: 4px 8px; border-radius: 8px; background: var(--dsw-alias-bg-layer-2); }
+    .conv-msg.user { background: var(--dsw-alias-fill-tertiary); }
+    #conv-input {
+      width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid var(--dsw-alias-border-l2);
+      background: var(--dsw-specific-input-major); color: var(--dsw-alias-label-primary);
+      font-size: 13px; outline: none;
+    }
+    #composer {
+      flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 18px 12px;
+      border-top: 1px solid var(--dsw-alias-border-l2); background: var(--dsw-alias-bg-base);
+    }
+    #composer .fake-send {
+      width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center;
+      background: var(--dsw-alias-brand-primary); color: #fff; font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside id="rail">
+      <div id="rail-brand"></div>
+      <div id="rail-nav">
+        <div class="rail-item is-active"><span class="rail-dot"></span>游戏厅</div>
+        <div class="rail-item"><span class="rail-dot"></span>对话</div>
+        <div class="rail-item"><span class="rail-dot"></span>设置</div>
+      </div>
+      <div id="rail-spacer"></div>
+      <div id="sidebar-icon"></div>
+      <div id="sidebar-footer"><div id="sidebar-mini-slot"></div></div>
+    </aside>
+    <div id="main">
+      <div id="root"></div>
+      <div id="fake-conversation" aria-hidden="true">
+        <div class="conv-title">DeepSeek 对话（harness 假面板）</div>
+        <div class="conv-msg user">想玩会儿魂斗罗，先帮我验收一下游戏厅。</div>
+        <div class="conv-msg">好的，游戏厅面板已在主区域打开；下面这个输入框用来验证玩游戏中打字不被抢键。</div>
+        <input id="conv-input" type="text" aria-label="给 DeepSeek 发消息（harness 假输入框）" placeholder="给 DeepSeek 发消息…（验证不抢键）" />
+      </div>
+      <div id="composer" aria-hidden="true">
+        <div class="conv-msg" style="flex:1 1 auto">给 DeepSeek 发消息…（harness 假输入框，验证面板不遮挡）</div>
+        <div class="fake-send">↑</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- React 18 UMD（离线保存于 assets/，与 netease-panel-selftest 同一份） -->
+  <script src="/react.js"></script>
+  <script src="/react-dom.js"></script>
+  <!-- 模拟器运行时：server.mjs 仅在 engine.js + vendor/jsnes.min.js 都存在时注入（真加载） -->
+  <!--GB_ENGINE_SCRIPTS-->
+
+  <script>
+    /* ------------------------------------------------------------------
+     * 验收脚手架：捕获 main / sidebar.panellist / sidebar.footer.action
+     * 只认 docs/CONTRACT.md §5 的 data-gb 钩子，不依赖 class 名。
+     * ------------------------------------------------------------------ */
+    window.__slots = { main: null, 'sidebar.panellist': null, 'sidebar.footer.action': null };
+    window.__slotSpecs = {};
+    window.__slotInjections = [];
+    window.__disposers = [];
+    window.__selectedPanels = [];
+    window.__localeRegistered = {};
+    window.__lang = 'zh';
+    window.__mountError = null;
+    window.__plugin = null;
+    window.__mounted = false;
+    window.__errors = [];
+    window.__gbEngines = [];   // GameBenchCore.create 拦截记录
+    window.__GB_INITIAL_VIEW = null;
+    window.__GB_MODE = null;
+
+    const qs = new URLSearchParams(location.search);
+    window.__GB_INITIAL_VIEW = qs.get('view');
+    window.__GB_MODE = qs.get('mode');
+
+    /* headless Chrome 会暴露一个「幽灵」标准手柄，持续产生 A/B/方向键，污染键盘断言。
+       harness 默认禁用 Gamepad（?gamepad=1 保留，供人工验证手柄）。 */
+    if (qs.get('gamepad') !== '1') {
+      try {
+        Object.defineProperty(navigator, 'getGamepads', {
+          configurable: true,
+          value: function () { return [null, null, null, null] },
+        });
+      } catch (_) { /* ignore */ }
+    }
+
+    window.__panelStore = {
+      id: 'game-bench',
+      listeners: new Set(),
+      get() { return this.id; },
+      set(id) {
+        this.id = id;
+        window.__activePanelId = id;
+        try { document.documentElement.dataset.activePanel = id } catch (_) {}
+        this.listeners.forEach((fn) => { try { fn() } catch (_) {} });
+      },
+      subscribe(fn) { this.listeners.add(fn); const self = this; return () => { self.listeners.delete(fn) }; },
+    };
+    window.__activePanelId = 'game-bench';
+    document.documentElement.dataset.activePanel = 'game-bench';
+
+    window.__logError = function (err) {
+      const text = String((err && (err.stack || err.message)) || err);
+      window.__errors.push(text);
+      console.error(text);
+    };
+
+    window.__ModuleLoader__ = {
+      load(entry) {
+        window.__pluginEntry = entry;
+        try {
+          window.__plugin = entry.factory((name) => {
+            if (name === 'react') return window.React;
+            if (name === 'react-dom') return window.ReactDOM;
+            throw new Error('unexpected require: ' + name);
+          });
+          window.__pluginInjects = (window.__plugin && window.__plugin.inject) || [];
+        } catch (err) {
+          window.__mountError = 'factory 抛错: ' + ((err && (err.stack || err.message)) || err);
+          window.__logError(err);
+        }
+      },
+    };
+
+    /* 拦截 GameBenchCore.create：记录 engine 实例、onState 帧数、setButton 调用。
+       这样 run.mjs 能断言「按键真的进了 engine」而不只依赖画面。 */
+    (function spyEngine() {
+      if (!window.GameBenchCore || typeof window.GameBenchCore.create !== 'function') return;
+      const origCreate = window.GameBenchCore.create.bind(window.GameBenchCore);
+      window.GameBenchCore.create = function (options) {
+        const rec = { createdAt: Date.now(), lastState: null, stateLog: [], setButton: [], destroyed: false };
+        let opts = options || {};
+        try {
+          opts = Object.assign({}, options, {
+            onState(state) {
+              rec.lastState = state;
+              rec.stateLog.push(state);
+              if (rec.stateLog.length > 400) rec.stateLog.splice(0, 200);
+              if (options && typeof options.onState === 'function') options.onState(state);
+            },
+          });
+        } catch (_) { /* ignore */ }
+        const engine = origCreate(opts);
+        /* engine.api 是 Object.freeze 的，无法直接改写方法；返回一层代理对象，拦截 setButton/destroy */
+        const api = {};
+        try {
+          for (const key of Object.keys(engine)) {
+            const value = engine[key];
+            if (typeof value !== 'function') { api[key] = value; continue }
+            api[key] = function () {
+              const args = Array.prototype.slice.call(arguments);
+              if (key === 'setButton') rec.setButton.push({ name: args[0], down: !!args[1], player: args[2] || 1, at: Date.now() });
+              if (key === 'destroy') rec.destroyed = true;
+              return value.apply(engine, args);
+            };
+          }
+          if (!api.setButton) api.setButton = function (name, down, player) { rec.setButton.push({ name, down: !!down, player: player || 1, at: Date.now() }) };
+          if (!api.destroy) api.destroy = function () { rec.destroyed = true };
+          if (!api.loadRom) api.loadRom = function () {};
+          if (!api.start) api.start = function () {};
+          if (!api.pause) api.pause = function () {};
+          if (!api.resume) api.resume = function () {};
+        } catch (_) { /* ignore */ }
+        rec.engine = engine;
+        rec.api = api;
+        window.__gbEngines.push(rec);
+        return api;
+      };
+    })();
+
+    function createCtx() {
+      const localeStore = window.__localeRegistered;
+      const listeners = [];
+      const lang = () => window.__lang;
+      function lookup(ns, key) {
+        const dict = localeStore[ns] || {};
+        const target = dict[lang()] || {};
+        if (target[key] != null) return target[key];
+        const zh = (dict.zh || {})[key];
+        if (zh != null) return zh;
+        for (const k of Object.keys(dict)) {
+          const v = (dict[k] || {})[key];
+          if (v != null) return v;
+        }
+        return undefined;
+      }
+      function makeT(ns) {
+        return function t(key, vars) {
+          let s = lookup(ns, key);
+          if (s == null) return undefined;
+          if (typeof s === 'string' && vars && typeof vars === 'object') {
+            s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] == null ? m : String(vars[k])));
+          }
+          return s;
+        };
+      }
+      const locale = {
+        get current() { return lang(); },
+        get locale() { return lang(); },
+        get lang() { return lang(); },
+        register(ns, a, b) {
+          if (a && typeof a === 'object') {
+            localeStore[ns] = localeStore[ns] || {};
+            for (const code of Object.keys(a)) localeStore[ns][code] = Object.assign({}, localeStore[ns][code], a[code]);
+          } else if (typeof a === 'string' && b && typeof b === 'object') {
+            localeStore[ns] = localeStore[ns] || {};
+            localeStore[ns][a] = Object.assign({}, localeStore[ns][a], b);
+          }
+          listeners.forEach((fn) => { try { fn() } catch (_) {} });
+          return () => {};
+        },
+        bind(ns) { return makeT(ns || 'game-bench'); },
+        t(a, b, c) { return typeof b === 'string' ? makeT(a)(b, c) : makeT('game-bench')(a, b); },
+        subscribe(fn) { listeners.push(fn); return () => {}; },
+        setLocale(l) { window.__lang = l; listeners.forEach((fn) => { try { fn() } catch (_) {} }); },
+      };
+
+      const slots = {
+        inject(name, factory) {
+          window.__slotInjections.push(name);
+          return factory();
+        },
+        register(spec, comp) {
+          if (!spec || !spec.name) throw new Error('slots.register 需要 { name }');
+          window.__slots[spec.name] = comp;
+          window.__slotSpecs[spec.name] = spec;
+          return () => { window.__slots[spec.name] = null };
+        },
+      };
+
+      const layout = {
+        get panel() { return window.__panelStore.get(); },
+        get activePanelId() { return window.__panelStore.get(); },
+        selectPanel(id) {
+          window.__selectedPanels.push(id);
+          const prev = window.__panelStore.get();
+          if (id) {
+            window.__panelStore.set(id);
+            if (id !== prev) syncMainForPanel(id);
+          }
+          return true;
+        },
+        openPanel(id) { return this.selectPanel(id); },
+        focusPanel(id) { return this.selectPanel(id); },
+        isPanelActive(id) { return window.__panelStore.get() === id; },
+        getState() { return { panel: window.__panelStore.get() } },
+      };
+
+      const noop = function () {};
+      const ctx = {
+        effect(fn) {
+          const d = fn();
+          if (typeof d === 'function') window.__disposers.push(d);
+          return d;
+        },
+        get() { return undefined; },
+        slots,
+        locale,
+        layout,
+        logger: { info: noop, warn: noop, error: noop, debug: noop },
+        webServer: { register() { return noop(); } },
+        remote: { session: { prompt() { return Promise.resolve({ ok: true }); } } },
+        on() { return noop; },
+        once() { return noop; },
+        off: noop,
+        emit: noop,
+      };
+      window.__ctx = ctx;
+      return ctx;
+    }
+
+    window.__unmount = function () {
+      for (const d of window.__disposers.splice(0)) { try { if (typeof d === 'function') d() } catch (_) {} }
+      try { window.__unmountMain() } catch (_) {}
+      for (const key of ['sidebar', 'mini']) {
+        try { if (window['__root_' + key]) window['__root_' + key].unmount() } catch (_) {}
+      }
+      window.__mounted = false;
+    };
+
+    function harnessUsePanelInfo(selector) {
+      const React = window.React;
+      const id = React.useSyncExternalStore(
+        window.__panelStore.subscribe.bind(window.__panelStore),
+        () => window.__panelStore.get(),
+      );
+      const info = { activePanelId: id, panelId: id, activePanel: id, panel: id };
+      return typeof selector === 'function' ? selector(info) : info;
+    }
+    window.__harnessUsePanelInfo = harnessUsePanelInfo;
+
+    let mainMounted = false;
+    window.__mountMain = function () {
+      const comp = window.__slots.main;
+      if (!comp) return false;
+      if (!window.__root_root) window.__root_root = ReactDOM.createRoot(document.getElementById('root'));
+      window.__root_root.render(React.createElement(comp, { usePanelInfo: harnessUsePanelInfo }));
+      mainMounted = true;
+      return true;
+    };
+    window.__unmountMain = function () {
+      if (!mainMounted) return;
+      const root = window.__root_root;
+      window.__root_root = null;
+      try { root.unmount() } catch (_) {}
+      mainMounted = false;
+    };
+    function syncMainForPanel(id) {
+      const panelId = window.__PANEL_KEY || 'game-bench';
+      if (id === panelId) { if (!mainMounted) window.__mountMain() } else window.__unmountMain();
+    }
+    window.__mainMounted = () => mainMounted;
+
+    window.__renderMini = function () {
+      const comp = window.__slots['sidebar.footer.action'];
+      if (!comp) return false;
+      if (!window.__root_mini) window.__root_mini = ReactDOM.createRoot(document.getElementById('sidebar-mini-slot'));
+      window.__root_mini.render(React.createElement(comp, { wide: true, usePanelInfo: harnessUsePanelInfo }));
+      return true;
+    };
+
+    window.__setActivePanel = function (id) {
+      const prev = window.__panelStore.get();
+      window.__panelStore.set(id);
+      if (id !== prev) syncMainForPanel(id);
+    };
+
+    window.__mount = async function () {
+      window.__mountError = null;
+      if (!window.__plugin) {
+        window.__mountError = 'window.__plugin 未创建（client.js 未加载或 factory 抛错）';
+        window.__logError(window.__mountError);
+        return false;
+      }
+      try {
+        const ret = window.__plugin.apply(createCtx());
+        if (ret && typeof ret.then === 'function') await ret;
+      } catch (err) {
+        window.__mountError = 'apply 抛错: ' + ((err && (err.stack || err.message)) || err);
+        window.__logError(err);
+        return false;
+      }
+      const main = window.__slots.main;
+      const icon = window.__slots['sidebar.panellist'];
+      const mini = window.__slots['sidebar.footer.action'];
+      if (!main) {
+        window.__mountError = 'main slot 未注册';
+        window.__logError(window.__mountError);
+        return false;
+      }
+      try {
+        window.__mountMain();
+        if (icon) {
+          window.__root_sidebar = ReactDOM.createRoot(document.getElementById('sidebar-icon'));
+          window.__root_sidebar.render(React.createElement(icon, { size: 20, active: true, wide: true, usePanelInfo: harnessUsePanelInfo }));
+        }
+        if (mini) window.__renderMini();
+      } catch (err) {
+        window.__mountError = 'mount 抛错: ' + ((err && (err.stack || err.message)) || err);
+        window.__logError(err);
+        return false;
+      }
+      window.__mounted = true;
+      return true;
+    };
+
+    /* ------------------------------------------------------------------
+     * 只读测试取值助手（run.mjs 用；只依赖契约钩子与真实 DOM）
+     * ------------------------------------------------------------------ */
+    window.__gbState = function () {
+      const root = document.querySelector('[data-gb="root"]');
+      const view = root ? (root.getAttribute('data-gb-view') || root.getAttribute('data-view') || '') : '';
+      const engines = window.__gbEngines;
+      const last = engines.length ? engines[engines.length - 1] : null;
+      return {
+        mounted: !!window.__mounted,
+        mountError: window.__mountError,
+        root: !!root,
+        view,
+        tab: root ? (root.getAttribute('data-gb-tab') || '') : '',
+        start: !!document.querySelector('[data-gb-start]'),
+        canvas: !!document.querySelector('[data-gb="root"] canvas') || !!document.querySelector('canvas'),
+        cards: document.querySelectorAll('[data-gb-card], [data-gb-market]').length,
+        libraryCards: document.querySelectorAll('[data-gb-card]').length,
+        marketCards: document.querySelectorAll('[data-gb-market]').length,
+        marketStatus: (() => { const el = document.querySelector('[data-gb-status]'); return el ? el.getAttribute('data-gb-status') : '' })(),
+        retry: !!document.querySelector('[data-gb-retry]'),
+        savePanel: (() => { const el = document.querySelector('[data-gb-save-panel]'); return el ? el.getAttribute('data-gb-save-panel') : null })(),
+        engines: engines.length,
+        lastState: last ? last.lastState : null,
+        frames: last && last.lastState ? last.lastState.frames : null,
+        audio: last && last.lastState ? last.lastState.audio : null,
+        crashed: last && last.lastState ? !!last.lastState.crashed : null,
+        destroyed: last ? last.destroyed : null,
+        setButton: last ? last.setButton.slice(-12) : [],
+        error: !!document.querySelector('[data-gb-error]'),
+        toast: (() => { const el = document.querySelector('[data-gb-toast]'); return el ? (el.textContent || '').trim() : null })(),
+        sidebarIcon: document.getElementById('sidebar-icon').children.length > 0,
+      };
+    };
+
+    window.__gbCards = function () {
+      return [...document.querySelectorAll('[data-gb-card], [data-gb-market]')].map((el) => {
+        const r = el.getBoundingClientRect();
+        const img = el.querySelector('img');
+        return {
+          id: el.getAttribute('data-gb-card') || el.getAttribute('data-gb-market') || el.getAttribute('data-id') || el.getAttribute('data-game-id'),
+          text: (el.textContent || '').trim().slice(0, 120),
+          visible: r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden',
+          imgSrc: img ? (img.getAttribute('src') || '').slice(0, 200) : null,
+          imgNatural: img ? img.naturalWidth : 0,
+          installed: (el.getAttribute('data-installed') || '') === 'true' || !!el.querySelector('[data-gb-installed]') || /已安装/.test(el.textContent || ''),
+          market: el.hasAttribute('data-gb-market'),
+          cls: String(el.className || '').slice(0, 60),
+        };
+      });
+    };
+
+    window.__gbCanvasStats = function () {
+      const root = document.querySelector('[data-gb="root"]');
+      const c = (root && root.querySelector('canvas')) || document.querySelector('canvas');
+      if (!c) return null;
+      const r = c.getBoundingClientRect();
+      const out = { w: Math.round(r.width), h: Math.round(r.height), cw: c.width, ch: c.height, nonBlack: null, hash: null, err: null, styleW: c.style.width || '' };
+      try {
+        const ctx2d = c.getContext('2d');
+        if (ctx2d && c.width > 0 && c.height > 0) {
+          const d = ctx2d.getImageData(0, 0, c.width, c.height).data;
+          let nonBlack = 0;
+          let hash = 0x811c9dc5;
+          for (let i = 0; i < d.length; i += 4) {
+            const v = d[i] | (d[i + 1] << 8) | (d[i + 2] << 16);
+            if (v !== 0) nonBlack++;
+            hash = (hash ^ v) >>> 0;
+            hash = Math.imul(hash, 0x01000193) >>> 0;
+          }
+          out.nonBlack = nonBlack;
+          out.hash = hash >>> 0;
+        }
+      } catch (e) { out.err = String(e) }
+      return out;
+    };
+
+    window.__gbSetInput = function (selector, value) {
+      const el = document.querySelector(selector);
+      if (!el) return false;
+      const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+      Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, String(value));
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    };
+
+    /** 派发键盘事件到 document.activeElement（或指定 selector）；bubbles 以便 window 监听也能收到 */
+    window.__gbKey = function (key, code, targetSelector) {
+      const target = targetSelector ? document.querySelector(targetSelector) : (document.activeElement || document.body);
+      const ev = (type) => new KeyboardEvent(type, {
+        key, code: code || key, keyCode: code === 'Space' ? 32 : key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0,
+        which: 0, bubbles: true, cancelable: true,
+      });
+      const down = ev('keydown');
+      const prevented = !target.dispatchEvent(down);
+      target.dispatchEvent(ev('keyup'));
+      return { target: target.tagName, prevented, defaultPrevented: down.defaultPrevented };
+    };
+
+    /** 把真实按键插入到当前焦点（CDP Input.insertText 的替代，走浏览器默认行为） */
+    window.__gbFocus = function (selector) {
+      const el = document.querySelector(selector);
+      if (!el) return false;
+      el.focus();
+      return document.activeElement === el;
+    };
+
+    /** 枚举 IndexedDB：库名/存储名/key（不含大 value），用于存档断言 */
+    window.__gbIdb = async function () {
+      const out = { dbs: [], stores: {}, keys: [], meta: [], error: null };
+      const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('idb timeout')), ms))]);
+      try {
+        const dbs = indexedDB.databases ? await withTimeout(indexedDB.databases(), 3000) : [];
+        out.dbs = dbs.map((d) => d.name);
+        for (const info of dbs) {
+          if (!info.name) continue;
+          await new Promise((resolve) => {
+            const req = indexedDB.open(info.name);
+            req.onerror = () => resolve();
+            req.onsuccess = () => {
+              const db = req.result;
+              const names = [...db.objectStoreNames];
+              out.stores[info.name] = names;
+              if (!names.length) { db.close(); resolve(); return }
+              let pending = names.length;
+              for (const storeName of names) {
+                try {
+                  const tx = db.transaction(storeName, 'readonly');
+                  const store = tx.objectStore(storeName);
+                  const keyReq = store.getAllKeys();
+                  keyReq.onsuccess = () => {
+                    for (const k of keyReq.result || []) {
+                      out.keys.push({ db: info.name, store: storeName, key: String(k) });
+                    }
+                    const valReq = store.getAll();
+                    valReq.onsuccess = () => {
+                      for (const v of valReq.result || []) {
+                        const meta = { db: info.name, store: storeName };
+                        if (v && typeof v === 'object') {
+                          meta.gameId = v.gameId; meta.slot = v.slot; meta.title = v.title;
+                          meta.label = v.label; meta.updatedAt = v.updatedAt;
+                          meta.stateBytes = v.state && v.state.byteLength ? v.state.byteLength : (v.state ? String(v.state).length : null);
+                          meta.bytes = v.state && v.state.byteLength ? v.state.byteLength : null;
+                        } else meta.value = String(v).slice(0, 80);
+                        out.meta.push(meta);
+                      }
+                      if (--pending === 0) { db.close(); resolve() }
+                    };
+                    valReq.onerror = () => { if (--pending === 0) { db.close(); resolve() } };
+                  };
+                  keyReq.onerror = () => { if (--pending === 0) { db.close(); resolve() } };
+                } catch (e) { if (--pending === 0) { db.close(); resolve() } }
+              }
+            };
+          });
+        }
+      } catch (e) { out.error = String((e && e.message) || e) }
+      return out;
+    };
+
+    window.__gbClearIdb = async function () {
+      try {
+        const dbs = indexedDB.databases ? await indexedDB.databases() : [];
+        for (const info of dbs) if (info.name) indexedDB.deleteDatabase(info.name);
+        return true;
+      } catch (_) { return false }
+    };
+
+    window.addEventListener('error', (e) => window.__logError(e.error || e.message));
+    window.addEventListener('unhandledrejection', (e) => window.__logError(e.reason));
+  </script>
+  <script src="/client.js"></script>
+  <script>
+    (async function () {
+      if (window.__GB_MODE) {
+        try {
+          await fetch('/__config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: window.__GB_MODE }),
+          });
+        } catch (_) { /* ignore */ }
+      }
+      if (!window.__plugin && !window.__mountError) {
+        window.__mountError = 'client.js 没有调用 window.__ModuleLoader__.load';
+        console.error(window.__mountError);
+      }
+      if (window.__plugin) await window.__mount();
+    })();
+  </script>
+</body>
+</html>
