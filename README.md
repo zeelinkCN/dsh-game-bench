@@ -2,7 +2,9 @@
 
 DSH（DeepSeek Harness）插件：左侧栏一个手柄图标，点开就是一台跑在浏览器里的红白机。
 
-- **打开即玩**：面板一开就是游戏库，点卡片立刻开局；内置 demo 随包分发，断网也能玩。
+仓库：<https://github.com/zeelinkCN/dsh-game-bench> · 许可：MIT
+
+- **打开即玩**：面板一开就是游戏库，点卡片立刻开局；内置游戏随包分发，断网也能玩（公开版附带作者原创像素 demo，见 `BUILTIN-GAMES.md` 配置自己的经典游戏）。
 - **内置游戏市场**：接 `zeelinkCN/game-bench-library`（1100+ 款、带封面与 SHA-256），按合集/搜索挑选，点一下下载安装，装完立刻开玩；ROM 与封面落盘缓存，之后离线可玩。
 - **真模拟器**：jsnes 2.1.0 在浏览器里跑 60fps（实测 0.9ms/帧），Web Audio 立体声、键盘/手柄、4 个存档槽（含自动存档）、倍速、CRT 滤镜、截图、全屏。
 - **跨平台**：macOS / Windows / Linux 同一份代码，只要有 DSH Web UI 就能玩。存档在浏览器 IndexedDB。
@@ -99,7 +101,8 @@ node dsh-game-bench/selftest/real-api.mjs # 真实 Host 路由验收（插件已
   （见 `BUILTIN-GAMES.md`），生成物被 `.gitignore` 排除，不会污染公开仓库。
 - `vendor/jsnes.min.js`：jsnes 2.1.0，Apache-2.0（`vendor/LICENSE-jsnes.txt`），未修改。
 - 市场目录与封面来自 `zeelinkCN/game-bench-library`，按其授权使用。
+- 第三方组件与授权明细：`THIRD-PARTY.md`。
 
 ## 许可
 
-MIT（`LICENSE`）。
+MIT（`LICENSE`）；第三方组件与素材见 `THIRD-PARTY.md`。
