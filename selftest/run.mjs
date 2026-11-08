@@ -500,6 +500,33 @@ try {
   const iconRendered = await evaluate(`(() => { const el = document.getElementById('sidebar-icon'); return { children: el.children.length, html: el.innerHTML.length, entry: !!el.querySelector('[data-gb-entry]'), label: (el.querySelector('[data-gb-entry]') || {}).getAttribute ? (el.querySelector('[data-gb-entry]').getAttribute('aria-label') || '') : '' } })()`)
   check('侧栏入口组件真实渲染出内容', iconRendered.children > 0 && iconRendered.html > 30, brief(iconRendered))
   check('侧栏入口带 [data-gb-entry]（real-page.mjs 定位钩子）', iconRendered.entry === true, brief(iconRendered))
+  const iconMetrics = await evaluate(`(() => {
+    const el = document.querySelector('[data-gb-entry]')
+    if (!el) return null
+    const r = el.getBoundingClientRect()
+    const svg = el.querySelector('svg')
+    const sr = svg ? svg.getBoundingClientRect() : null
+    const cs = getComputedStyle(el)
+    const svgCs = svg ? getComputedStyle(svg) : null
+    return {
+      w: Math.round(r.width), h: Math.round(r.height),
+      radius: cs.borderRadius, bg: cs.backgroundImage.slice(0, 60),
+      transform: cs.transform, boxShadow: cs.boxShadow,
+      svgW: sr ? Math.round(sr.width) : null, svgH: sr ? Math.round(sr.height) : null,
+      svgRatio: sr && r.width ? +(sr.width / r.width).toFixed(2) : null,
+      svgTransform: svgCs ? svgCs.transform : null,
+      overflow: svg && sr ? (sr.left >= r.left - 0.5 && sr.top >= r.top - 0.5 && sr.right <= r.right + 0.5 && sr.bottom <= r.bottom + 0.5) : null,
+    }
+  })()`)
+  check('侧栏图标：外层 20×20 圆角 chip、红渐变底、无 scale/阴影',
+    !!iconMetrics && Math.abs(iconMetrics.w - 20) <= 1 && Math.abs(iconMetrics.h - 20) <= 1
+      && /gradient/i.test(iconMetrics.bg) && iconMetrics.transform === 'none'
+      && (iconMetrics.boxShadow === 'none' || iconMetrics.boxShadow === ''),
+    brief(iconMetrics))
+  check('侧栏图标：内层 SVG ≈ size*0.66 且不溢出外层',
+    !!iconMetrics && iconMetrics.svgW !== null && Math.abs(iconMetrics.svgW - 13) <= 1
+      && Math.abs(iconMetrics.svgW - iconMetrics.svgH) <= 1 && iconMetrics.overflow === true,
+    brief({ svgW: iconMetrics && iconMetrics.svgW, ratio: iconMetrics && iconMetrics.svgRatio, overflow: iconMetrics && iconMetrics.overflow }))
   await screenshotRegion('#sidebar-icon', '11-sidebar-entry.png', 6, 12)
   check('无 console.error / pageerror（挂载期）', unexpectedErrors.length === 0, brief(unexpectedErrors.slice(0, 3)))
 
@@ -608,6 +635,113 @@ try {
     brief({ hashChanged, frames: `${st1.frames} → ${st2.frames}` }))
   check('engine 未崩溃（crashed=false）', st2.crashed === false, brief({ crashed: st2.crashed, audio: st2.audio }))
   await S('02-player-running.png')
+
+  /* ================================================================ *
+   * [3c] 播放器画面模式（fit / stretch / pixel / 全屏结构）
+   * ================================================================ */
+  section('[3c] 播放器画面模式（fit / stretch / pixel）')
+  const modeHooks = await evaluate(`(() => {
+    const btn = document.querySelector('[data-gb-screen-mode]')
+    const dbg = window.__GAME_BENCH__
+    let sizes = null
+    try {
+      if (dbg && typeof dbg.screenSizeFor === 'function') {
+        sizes = { fit: dbg.screenSizeFor('fit', 1000, 800), stretch: dbg.screenSizeFor('stretch', 1000, 500), pixel: dbg.screenSizeFor('pixel', 1000, 800) }
+      }
+    } catch (_) { sizes = null }
+    return {
+      btn: btn ? btn.getAttribute('data-gb-screen-mode') : null,
+      fullscreenBtn: !!document.querySelector('[data-gb-fullscreen]'),
+      dbg: !!dbg,
+      sizes,
+    }
+  })()`)
+  check('控制条画面模式按钮存在且默认 fit', modeHooks.btn === 'fit', brief(modeHooks.btn))
+  check('全屏按钮存在（[data-gb-fullscreen]）', modeHooks.fullscreenBtn === true)
+  check('验收句柄 window.__GAME_BENCH__ + screenSizeFor 可用', modeHooks.dbg === true && !!modeHooks.sizes, brief({ dbg: modeHooks.dbg }))
+  if (modeHooks.sizes) {
+    const s = modeHooks.sizes
+    check('fit = 4:3（w/h ≈ 1.333）', Math.abs(s.fit.w / s.fit.h - 4 / 3) < 0.01, s.fit)
+    check('stretch 精确等于可用尺寸', s.stretch.w === 1000 && s.stretch.h === 500, s.stretch)
+    check('pixel = 256/240 整数倍', s.pixel.w % 256 === 0 && s.pixel.h % 240 === 0 && s.pixel.w / 256 === s.pixel.h / 240, s.pixel)
+  }
+  const measureCanvas = () => evaluate(`(() => {
+    const c = document.querySelector('[data-gb="root"] canvas')
+    if (!c) return null
+    const r = c.getBoundingClientRect()
+    const stage = c.closest('[data-gb-stage]') || c.parentElement
+    const sr = stage ? stage.getBoundingClientRect() : null
+    const modeEl = document.querySelector('[data-gb-screen-mode]')
+    let exp = null
+    try {
+      const pad = Math.max(12, Math.round(Math.min(sr.width, sr.height) * 0.03))
+      exp = window.__GAME_BENCH__.screenSizeFor(modeEl.getAttribute('data-gb-screen-mode'), Math.max(1, sr.width - pad * 2), Math.max(1, sr.height - pad * 2))
+    } catch (_) { exp = null }
+    return { mode: modeEl && modeEl.getAttribute('data-gb-screen-mode'), w: Math.round(r.width), h: Math.round(r.height), ratio: r.height ? r.width / r.height : 0, exp }
+  })()`)
+  const fitMeasure = await measureCanvas()
+  check('默认 fit：canvas 为 4:3（w/h ≈ 1.333）', !!fitMeasure && fitMeasure.mode === 'fit' && Math.abs(fitMeasure.ratio - 4 / 3) < 0.02, brief(fitMeasure))
+  const cyc1 = await (async () => { await evaluate(`document.querySelector('[data-gb-screen-mode]').click()`); await sleep(500); return measureCanvas() })()
+  check('切到 stretch：canvas 铺满可用区域（宽高 ≥ fit，且比例不同于 4:3）',
+    !!cyc1 && cyc1.mode === 'stretch' && !!fitMeasure && cyc1.w >= fitMeasure.w && cyc1.h >= fitMeasure.h
+      && (cyc1.w !== fitMeasure.w || cyc1.h !== fitMeasure.h) && Math.abs(cyc1.ratio - 4 / 3) > 0.02,
+    brief({ stretch: cyc1, fit: fitMeasure && { w: fitMeasure.w, h: fitMeasure.h } }))
+  await S('02b-player-stretch.png')
+  const cyc2 = await (async () => { await evaluate(`document.querySelector('[data-gb-screen-mode]').click()`); await sleep(500); return measureCanvas() })()
+  check('切到 pixel：canvas CSS 尺寸为 256/240 整数倍', !!cyc2 && cyc2.mode === 'pixel' && cyc2.w % 256 === 0 && cyc2.h % 240 === 0, brief(cyc2))
+  await S('02c-player-pixel.png')
+  const cyc3 = await (async () => { await evaluate(`document.querySelector('[data-gb-screen-mode]').click()`); await sleep(500); return measureCanvas() })()
+  check('再点回 fit：恢复 4:3 且尺寸与初始 fit 一致（稳定往返）',
+    !!cyc3 && cyc3.mode === 'fit' && Math.abs(cyc3.ratio - 4 / 3) < 0.02 && !!fitMeasure
+      && Math.abs(cyc3.w - fitMeasure.w) <= 2 && Math.abs(cyc3.h - fitMeasure.h) <= 2,
+    brief({ now: cyc3, before: fitMeasure && { w: fitMeasure.w, h: fitMeasure.h } }))
+  check('模式切换 toast 提示', await evaluate(`(() => { const t = document.querySelector('[data-gb-toast]'); return !!t && /画面|比例|铺满|像素|fit|stretch|pixel/i.test(t.textContent || '') })()`))
+
+  // 全屏：优先真实 CDP 手势（headless 可能无用户激活），失败则注入 fullscreen 状态验证结构
+  const fsBtn = await evaluate(`(() => {
+    const b = document.querySelector('[data-gb-fullscreen]')
+    if (!b) return null
+    const r = b.getBoundingClientRect()
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }
+  })()`)
+  let realFs = false
+  if (fsBtn) {
+    try {
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: fsBtn.x, y: fsBtn.y, button: 'left', clickCount: 1 })
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: fsBtn.x, y: fsBtn.y, button: 'left', clickCount: 1 })
+      await sleep(900)
+      realFs = await evaluate(`!!document.fullscreenElement`)
+    } catch (_) { realFs = false }
+  }
+  if (realFs) {
+    check('真实全屏：requestFullscreen 生效（document.fullscreenElement）', true)
+    await S('02d-player-fullscreen.png')
+    await evaluate(`(document.exitFullscreen ? document.exitFullscreen() : Promise.resolve())`)
+    await sleep(500)
+  } else {
+    console.log('  · headless 无用户激活，requestFullscreen 未生效 → 用 store 注入 fullscreen 状态验证「控制条闲置隐藏」结构')
+    await evaluate(`window.__GAME_BENCH__.setState({ fullscreen: true })`)
+    await sleep(3000)
+    const hidden = await evaluate(`!!document.querySelector('.gb-player.is-controls-hidden')`)
+    await evaluate(`window.dispatchEvent(new PointerEvent('pointermove', { bubbles: true }))`)
+    await sleep(400)
+    const restored = await evaluate(`!document.querySelector('.gb-player.is-controls-hidden')`)
+    check('全屏闲置 2.5s 后控制条自动隐藏（is-controls-hidden），指针移动后恢复', hidden && restored, { hidden, restored })
+    await evaluate(`window.__GAME_BENCH__.setState({ fullscreen: false })`)
+    await sleep(300)
+  }
+
+  // CRT 滤镜：默认关闭（面板反馈「受损感」后默认 crt=false），点击开启后才出现覆盖层
+  const crtOff = await evaluate(`!document.querySelector('[data-gb-crt]') && !document.querySelector('.gb-player.is-crt')`)
+  check('默认关闭 CRT 滤镜（无 [data-gb-crt] 覆盖层）', crtOff === true)
+  await evaluate(`(document.querySelector('[data-gb-crt-toggle]') || { click() {} }).click()`)
+  await sleep(500)
+  const crtOn = await evaluate(`!!document.querySelector('[data-gb-crt]') && !!document.querySelector('.gb-player.is-crt')`)
+  check('点击 CRT 开关：出现覆盖层 + 播放器 is-crt', crtOn === true)
+  await S('02e-player-crt.png')
+  await evaluate(`(document.querySelector('[data-gb-crt-toggle]') || { click() {} }).click()`)
+  await sleep(400)
+  check('再点关闭 CRT：覆盖层移除', await evaluate(`!document.querySelector('[data-gb-crt]')`))
 
   /* ================================================================ *
    * [3b] 内置 7 款 ROM：真实 engine 逐个加载 + 渲染 + 存档往返
@@ -796,6 +930,15 @@ try {
   await sleep(800)
   const backView = await evaluate(`(() => { const r = document.querySelector('[data-gb="root"]'); return r ? r.getAttribute('data-gb-view') : null })()`)
   check('播放器返回游戏库视图', backView === 'library', brief(backView))
+
+  // 设置页：画面模式三选一
+  await clickFirst(['[data-gb-settings]'], /设置/i)
+  await sleep(700)
+  const screenSettings = await evaluate(`[...document.querySelectorAll('[data-gb-screen-mode-setting]')].map((b) => ({ v: b.getAttribute('data-gb-screen-mode-setting'), on: b.getAttribute('aria-checked') }))`)
+  check('设置页有画面模式三选一（fit/stretch/pixel）', screenSettings.length === 3 && screenSettings.some((x) => x.v === 'fit') && screenSettings.some((x) => x.v === 'stretch') && screenSettings.some((x) => x.v === 'pixel'), brief(screenSettings))
+  await S('16-settings.png')
+  await clickFirst(['[data-gb-settings-back]'], /返回|back/i)
+  await sleep(600)
   section('[6] 市场（合集 / 搜索 / 安装 / 错误态）')
   const beforeInstall = await evaluate(`(async () => { const r = await fetch('/game-bench/api/library'); const j = await r.json(); return j.data.games.length })()`)
   const marketTab = await gotoTab('market')

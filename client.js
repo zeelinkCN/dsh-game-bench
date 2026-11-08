@@ -363,13 +363,16 @@ window.__ModuleLoader__.load({
       await dbPut(STORE_PROGRESS, record.gameId, record)
     }
 
+    const SCREEN_MODES = ['fit', 'stretch', 'pixel']
+
     const DEFAULT_UI = {
       volume: 0.8,
       muted: false,
       speed: 1,
-      crt: true,
+      crt: false,
       showFps: false,
       keys: 'default',
+      screenMode: 'fit',
     }
 
     function normalizeUi(raw) {
@@ -381,6 +384,7 @@ window.__ModuleLoader__.load({
         crt: source.crt === undefined ? DEFAULT_UI.crt : !!source.crt,
         showFps: !!source.showFps,
         keys: source.keys === 'arcade' ? 'arcade' : 'default',
+        screenMode: SCREEN_MODES.indexOf(source.screenMode) >= 0 ? source.screenMode : DEFAULT_UI.screenMode,
       }
     }
 
@@ -712,6 +716,36 @@ window.__ModuleLoader__.load({
 
     function emptyEngineState() {
       return { running: false, paused: false, crashed: false, audio: 'off', fps: 0, frames: 0, romTitle: '' }
+    }
+
+    /* 画面 CSS 尺寸（canvas 内部分辨率始终 256x240）：
+     *  fit     4:3 电视比例，占满可用高度，横向按 CRT 观感拉伸 1.25x
+     *  stretch 铺满可用区域（允许变形）
+     *  pixel   整数倍像素放大，保持像素清晰
+     */
+    function screenSizeFor(mode, availW, availH) {
+      const width = Math.max(1, Math.round(Number(availW) || 0))
+      const height = Math.max(1, Math.round(Number(availH) || 0))
+      if (mode === 'stretch') return { w: width, h: height }
+      if (mode === 'pixel') {
+        const scale = Math.max(1, Math.floor(Math.min(width / FRAME_W, height / FRAME_H)))
+        return { w: FRAME_W * scale, h: FRAME_H * scale }
+      }
+      const h = Math.min(height, Math.round((width * 3) / 4))
+      const w = Math.round((h * 4) / 3)
+      return { w: Math.max(1, w), h: Math.max(1, h) }
+    }
+
+    function setScreenMode(mode) {
+      const next = SCREEN_MODES.indexOf(mode) >= 0 ? mode : 'fit'
+      patchUi({ screenMode: next })
+    }
+
+    function cycleScreenMode() {
+      const index = SCREEN_MODES.indexOf(state.ui.screenMode)
+      const next = SCREEN_MODES[(index + 1) % SCREEN_MODES.length]
+      patchUi({ screenMode: next })
+      toast(translate('player.screenModeChanged', { mode: translate('player.screen.' + next) }), 'info')
     }
 
     function isTypingTarget(element) {
@@ -1655,7 +1689,12 @@ window.__ModuleLoader__.load({
     async function bootstrap() {
       try {
         const rawUi = await dbGet(STORE_SETTINGS, 'ui')
-        if (rawUi) setState({ ui: normalizeUi(rawUi) })
+        if (rawUi) {
+          const normalized = normalizeUi(rawUi)
+          /* 旧版本默认开着很重的 CRT；升级后第一次读档先回到「关闭」，用户想要可再手动打开 */
+          if (rawUi.screenMode === undefined) normalized.crt = false
+          setState({ ui: normalized })
+        }
       } catch {
         /* ignore */
       }
@@ -1722,6 +1761,7 @@ window.__ModuleLoader__.load({
       mute: [['path', { d: 'M4.6 9.6h3.2L12 6v12l-4.2-3.6H4.6Z' }], ['path', { d: 'm15.6 9.6 4.4 4.8M20 9.6l-4.4 4.8' }]],
       speed: [['path', { d: 'M4.4 17.6a8.2 8.2 0 1 1 15.2 0' }], ['path', { d: 'M12 14.6l3.6-4.4' }], ['circle', { cx: 12, cy: 15.4, r: 1.3, fill: 'currentColor', stroke: 'none' }]],
       crt: [['rect', { x: 3.4, y: 5.4, width: 17.2, height: 11.6, rx: 2.2 }], ['path', { d: 'M8.4 20.4h7.2' }], ['path', { d: 'M10.6 17v3.4M13.4 17v3.4' }]],
+      ratio: [['rect', { x: 3.4, y: 6, width: 17.2, height: 12, rx: 2 }], ['path', { d: 'M8.4 6v12M15.6 6v12' }]],
       camera: [['path', { d: 'M3.8 8.6h3.1l1.5-2.2h7.2l1.5 2.2h3.1v9.6a1.8 1.8 0 0 1-1.8 1.8H5.6a1.8 1.8 0 0 1-1.8-1.8Z' }], ['circle', { cx: 12, cy: 13.2, r: 3.2 }]],
       fullscreen: [['path', { d: 'M4.4 9.2V4.4h4.8M15 4.4h4.6v4.8M19.6 14.8v4.8H15M9.2 19.6H4.4v-4.8' }]],
       minimize: [['path', { d: 'M9.2 4.4v4.8H4.4M19.6 9.2h-4.8V4.4M14.8 19.6v-4.8h4.8M4.4 14.8h4.8v4.8' }]],
@@ -1800,33 +1840,50 @@ window.__ModuleLoader__.load({
       )
     }
 
-    /* 侧栏入口图标：红底金边 + 白色像素十字方向键 + 右下两颗 A/B 圆键，
-     * 与 assets/icon-256.png 同一套「一看就是游戏」的符号；尺寸跟随 props.size。 */
+    /* 侧栏入口图标：红牌 + 白色像素摇杆（球头/杆/底座）+ 两颗金色按键。
+    * 外层 span 负责底色/圆角/尺寸（等同 DSH 侧栏 chip），内层 SVG 只占 size*0.7
+    * 并留安全边，避免小尺寸下描边贴边被裁、放大后与相邻按钮互相压。
+    * 图形是「球头摇杆 + 底座 + 两颗键」——20px 下也能一眼认出是游戏机。 */
     function PanelIcon(props) {
       const size = (props && props.size) || 20
       const active = !!(props && props.active)
-      const plate = active ? '#e0374f' : '#c8102e'
-      const edge = active ? '#a3122c' : '#8b0a1e'
-      const border = active ? '#ffd166' : '#f5b731'
-      const glyph = active ? '#ffe2a3' : '#fff8ec'
+      const inner = Math.max(9, Math.round(size * 0.7))
+      const body = active ? '#ffe2a3' : '#fff8ec'
+      const key = active ? '#ffcf4d' : '#f5b731'
       return h(
-        'svg',
+        'span',
         {
           className: cx('gb-panel-mark', active && 'is-active'),
-          width: size,
-          height: size,
-          viewBox: '0 0 20 20',
-          shapeRendering: 'crispEdges',
           'data-gb-entry': '',
-          'aria-hidden': 'true',
-          focusable: 'false',
+          style: {
+            width: size + 'px',
+            height: size + 'px',
+            borderRadius: Math.round(size * 0.26) + 'px',
+            background: active
+              ? 'linear-gradient(160deg,#e0374f,#c8102e)'
+              : 'linear-gradient(160deg,#d21a38,#a30a25)',
+          },
         },
-        h('rect', { x: 0.5, y: 0.5, width: 19, height: 19, rx: 4.8, fill: plate, stroke: edge, strokeWidth: 1 }),
-        h('rect', { x: 1.3, y: 1.3, width: 17.4, height: 17.4, rx: 4, fill: 'none', stroke: border, strokeWidth: 1 }),
-        h('rect', { x: 3, y: 8, width: 10, height: 4, fill: glyph }),
-        h('rect', { x: 6, y: 5, width: 4, height: 10, fill: glyph }),
-        h('circle', { cx: 14.5, cy: 13.5, r: 1.3, fill: glyph }),
-        h('circle', { cx: 16.6, cy: 11.3, r: 1.3, fill: glyph }),
+        h(
+          'svg',
+          {
+            width: inner,
+            height: inner,
+            viewBox: '0 0 16 16',
+            shapeRendering: 'crispEdges',
+            'aria-hidden': 'true',
+            focusable: 'false',
+          },
+          /* 球头 */
+          h('circle', { cx: 5.6, cy: 4.2, r: 3.2, fill: body }),
+          /* 摇杆 */
+          h('rect', { x: 4.8, y: 6.2, width: 1.8, height: 5.2, fill: body }),
+          /* 底座 */
+          h('rect', { x: 1.2, y: 10.4, width: 13.6, height: 3.8, rx: 1.3, fill: body }),
+          /* 两颗按键 */
+          h('rect', { x: 9.1, y: 11.2, width: 1.9, height: 2.1, fill: key }),
+          h('rect', { x: 11.7, y: 11.2, width: 1.9, height: 2.1, fill: key }),
+        ),
       )
     }
 
@@ -3034,6 +3091,35 @@ window.__ModuleLoader__.load({
           ),
           h(
             'div',
+            { className: 'gb-field' },
+            h('span', { className: 'gb-field-label' }, t('settings.screen')),
+            h(
+              'div',
+              { className: 'gb-seg', role: 'radiogroup', 'aria-label': t('settings.screen') },
+              [
+                ['fit', 'player.screen.fit'],
+                ['stretch', 'player.screen.stretch'],
+                ['pixel', 'player.screen.pixel'],
+              ].map(([value, key]) =>
+                h(
+                  'button',
+                  {
+                    key: value,
+                    type: 'button',
+                    role: 'radio',
+                    'aria-checked': s.ui.screenMode === value,
+                    className: cx('gb-seg-btn', s.ui.screenMode === value && 'is-active'),
+                    'data-gb-screen-mode-setting': value,
+                    onClick: () => setScreenMode(value),
+                  },
+                  t(key),
+                ),
+              ),
+            ),
+            h('p', { className: 'gb-field-hint' }, t('settings.screenHint')),
+          ),
+          h(
+            'div',
             { className: 'gb-field gb-field-inline' },
             h(Switch, { id: 'crt', checked: s.ui.crt, onChange: toggleCrt, label: t('settings.crt') }),
             h(Switch, { id: 'fps', checked: s.ui.showFps, onChange: toggleShowFps, label: t('settings.fps') }),
@@ -3258,7 +3344,8 @@ window.__ModuleLoader__.load({
       const canvasRef = React.useRef(null)
       const stageRef = React.useRef(null)
       const screenRef = React.useRef(null)
-      const [scale, setScale] = React.useState(2)
+      const [screen, setScreen] = React.useState({ w: 512, h: 384 })
+      const [controlsHidden, setControlsHidden] = React.useState(false)
 
       React.useEffect(() => {
         const canvas = canvasRef.current
@@ -3273,11 +3360,17 @@ window.__ModuleLoader__.load({
         const stage = stageRef.current
         if (!stage) return undefined
         const measure = () => {
-          const width = Math.max(1, stage.clientWidth - 26)
-          const height = Math.max(1, stage.clientHeight - 26)
-          const fit = Math.min(width / FRAME_W, height / FRAME_H)
-          const next = fit >= 1 ? Math.floor(fit) : Math.max(0.35, fit)
-          setScale((previous) => (previous === next ? previous : next))
+          const rawW = Math.max(1, stage.clientWidth)
+          const rawH = Math.max(1, stage.clientHeight)
+          /* 全屏时不留边距；窗口内按短边 3% 留白（至少 12px），小窗口不会浪费空间 */
+          const inFullscreen = !!document.fullscreenElement
+          const pad = inFullscreen ? 0 : Math.max(12, Math.round(Math.min(rawW, rawH) * 0.03))
+          const next = screenSizeFor(
+            s.ui.screenMode,
+            Math.max(1, rawW - pad * 2),
+            Math.max(1, rawH - pad * 2),
+          )
+          setScreen((previous) => (previous.w === next.w && previous.h === next.h ? previous : next))
         }
         measure()
         let observer = null
@@ -3296,14 +3389,42 @@ window.__ModuleLoader__.load({
           }
           window.removeEventListener('resize', measure)
         }
-      }, [game && game.id, s.fullscreen])
+      }, [game && game.id, s.fullscreen, s.ui.screenMode])
+
+      /* 全屏时控制条自动隐藏：2.5s 无操作淡出，移动/按键/触摸再现 */
+      React.useEffect(() => {
+        if (!s.fullscreen) {
+          setControlsHidden(false)
+          return undefined
+        }
+        let timer = null
+        let hidden = false
+        const reveal = () => {
+          if (hidden) {
+            hidden = false
+            setControlsHidden(false)
+          }
+          if (timer) clearTimeout(timer)
+          timer = setTimeout(() => {
+            hidden = true
+            setControlsHidden(true)
+          }, 2500)
+        }
+        reveal()
+        const events = ['mousemove', 'pointerdown', 'keydown', 'wheel', 'touchstart']
+        events.forEach((name) => window.addEventListener(name, reveal, { passive: true }))
+        return () => {
+          if (timer) clearTimeout(timer)
+          events.forEach((name) => window.removeEventListener(name, reveal))
+        }
+      }, [s.fullscreen])
 
       if (!game) return null
 
       const phase = s.playerPhase
       const paused = !!s.engineState.paused
       const audioBlocked = s.engineState.audio === 'blocked' && s.audioReady
-      const screenStyle = { width: FRAME_W * scale + 'px', height: FRAME_H * scale + 'px' }
+      const screenStyle = { width: screen.w + 'px', height: screen.h + 'px' }
 
       const screenChildren = [
         h('canvas', {
@@ -3365,7 +3486,7 @@ window.__ModuleLoader__.load({
                 'data-gb-start': '',
                 onClick: startAudio,
               },
-              h('span', { className: 'gb-start-pad' }, h(PixelPad, { size: Math.max(40, Math.min(92, Math.round(FRAME_W * scale * 0.2))) })),
+              h('span', { className: 'gb-start-pad' }, h(PixelPad, { size: Math.max(40, Math.min(92, Math.round(Math.min(screen.w, screen.h) * 0.2))) })),
               h('span', { className: 'gb-start-title' }, t('player.startOverlay')),
               h('span', { className: 'gb-start-hint' }, t('player.startHint')),
               h('span', { className: 'gb-start-blink' }, t('player.pressStart')),
@@ -3394,7 +3515,7 @@ window.__ModuleLoader__.load({
       return h(
         'section',
         {
-          className: cx('gb-player', s.ui.crt && 'is-crt'),
+          className: cx('gb-player', s.ui.crt && 'is-crt', controlsHidden && 'is-controls-hidden'),
           'data-gb-player': '',
           'data-gb-phase': phase,
           'data-gb-status':
@@ -3547,6 +3668,21 @@ window.__ModuleLoader__.load({
                 value + '×',
               ),
             ),
+          ),
+          h(
+            'button',
+            {
+              type: 'button',
+              className: 'gb-icon-btn gb-screen-mode-btn',
+              'data-gb-screen-mode': s.ui.screenMode,
+              title: t('player.screenModeTitle', { mode: t('player.screen.' + s.ui.screenMode) }),
+              'aria-label': t('player.screenModeTitle', { mode: t('player.screen.' + s.ui.screenMode) }),
+              onClick: () => cycleScreenMode(),
+            },
+            h(Icon, {
+              name: s.ui.screenMode === 'stretch' ? 'fullscreen' : s.ui.screenMode === 'pixel' ? 'grid' : 'ratio',
+              size: 16,
+            }),
           ),
           h(
             'button',
@@ -4142,17 +4278,18 @@ window.__ModuleLoader__.load({
       display:block;width:100%;height:100%;background:#000;
       image-rendering:pixelated;image-rendering:crisp-edges;
     }
+    /* 轻量 CRT：几乎不压暗画面，只留很淡的扫描线与边角，避免「糊了一层脏东西」 */
     .gb-crt-overlay{
       position:absolute;inset:0;pointer-events:none;z-index:2;
       background:
-        repeating-linear-gradient(0deg,rgba(0,0,0,.26) 0 1px,rgba(0,0,0,0) 1px 3px),
-        radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 52%,rgba(0,0,0,.46) 100%),
-        linear-gradient(118deg,rgba(255,255,255,.07) 0 26%,rgba(255,255,255,.015) 30% 48%,rgba(255,255,255,0) 52%);
-      mix-blend-mode:multiply;
+        repeating-linear-gradient(0deg,rgba(0,0,0,.11) 0 1px,rgba(0,0,0,0) 1px 4px),
+        radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 62%,rgba(0,0,0,.20) 100%);
+      mix-blend-mode:normal;
+      opacity:.85;
     }
     .gb-crt-overlay::after{
       content:"";position:absolute;inset:0;
-      background:linear-gradient(180deg,rgba(255,255,255,.07),transparent 18%,transparent 82%,rgba(0,0,0,.18));
+      background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 22%,transparent 80%,rgba(0,0,0,.06));
     }
     .gb-screen-veil{
       position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
@@ -4284,13 +4421,35 @@ window.__ModuleLoader__.load({
     .gb-touch-btn.face.b{background:rgba(245,183,49,.24);border-color:rgba(245,183,49,.5);color:#ffe0a0}
     .gb-touch-btn.face.a{background:rgba(200,16,46,.3);border-color:rgba(224,55,79,.55);color:#ffd2d4}
 
-    .gb-player:fullscreen{background:#07060a;padding:10px 14px 12px}
-    .gb-player:fullscreen .gb-player-bar{border-radius:0;border-left:0;border-right:0}
-    .gb-player:fullscreen .gb-saves{bottom:104px;right:20px}
+    .gb-player-top,.gb-player-bar,.gb-keyhints{transition:opacity 220ms ease}
+    .gb-player.is-controls-hidden{cursor:none}
+    .gb-player.is-controls-hidden .gb-player-top,
+    .gb-player.is-controls-hidden .gb-player-bar,
+    .gb-player.is-controls-hidden .gb-keyhints{opacity:0;pointer-events:none}
+    /* 全屏：stage 占满 viewport，顶部/控制条浮在画面上（自动隐藏后才是真正的满屏） */
+    .gb-player:fullscreen{background:#050508;padding:0;gap:0}
+    .gb-player:fullscreen .gb-player-stage{flex:1;min-height:0;padding:0}
+    .gb-player:fullscreen .gb-screen{border-radius:0;box-shadow:none}
+    .gb-player:fullscreen .gb-player-top{
+      position:absolute;top:0;left:0;right:0;z-index:20;padding:10px 16px;
+      background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,0));
+    }
+    .gb-player:fullscreen .gb-player-bar{
+      position:absolute;left:0;right:0;bottom:0;z-index:20;margin:0;border-radius:0;
+      border-left:0;border-right:0;padding:7px 10px;
+      background:rgba(10,8,12,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    }
+    .gb-player:fullscreen .gb-keyhints{
+      position:absolute;left:0;right:0;bottom:52px;z-index:19;padding:0 10px 6px;
+      background:linear-gradient(0deg,rgba(0,0,0,.5),rgba(0,0,0,0));
+    }
+    .gb-player:fullscreen .gb-saves{bottom:96px;right:20px}
 
     /* 侧栏入口图标 */
-    .gb-panel-mark{display:block;flex:none;filter:drop-shadow(0 1px 1px rgba(20,6,10,.28));transition:transform 160ms ease,filter 160ms ease}
-    .gb-panel-mark.is-active{transform:scale(1.06);filter:drop-shadow(0 2px 5px color-mix(in srgb,var(--gb-red) 46%,transparent))}
+    .gb-panel-mark{
+      display:grid;place-items:center;flex:none;box-sizing:border-box;overflow:hidden;
+      transition:background 160ms ease;
+    }
 
     /* ---------------------- 动画 ---------------------- */
     @keyframes gb-spin{to{transform:rotate(360deg)}}
@@ -4466,8 +4625,14 @@ window.__ModuleLoader__.load({
       'player.gamepad': '手柄已连接',
       'player.fullscreen': '全屏',
       'player.exitFullscreen': '退出全屏',
-      'player.crt': 'CRT 效果',
+      'player.crt': 'CRT 滤镜',
       'player.speed': '倍速',
+      'player.screenMode': '画面比例',
+      'player.screenModeTitle': '画面比例：{mode}',
+      'player.screenModeChanged': '画面比例：{mode}',
+      'player.screen.fit': '4:3 比例',
+      'player.screen.stretch': '铺满',
+      'player.screen.pixel': '像素',
       'player.volume': '音量',
       'player.mute': '静音',
       'player.unmute': '取消静音',
@@ -4521,8 +4686,10 @@ window.__ModuleLoader__.load({
       'settings.keys.default': '默认 Z=B / X=A',
       'settings.keys.arcade': '街机 Z=A / X=B',
       'settings.keysHint': '方向键、Enter、Shift 不变；只交换 A/B。',
-      'settings.crt': '默认开启 CRT 效果',
+      'settings.crt': 'CRT 滤镜',
       'settings.fps': '显示帧率',
+      'settings.screen': '画面比例',
+      'settings.screenHint': '默认 4:3 接近当年的电视；「铺满」会拉伸画面，「像素」保持整数倍清晰。CRT 滤镜是另一项，可单独开关。',
       'settings.section.data': '数据与状态',
       'settings.dataDir': '数据目录',
       'settings.auth': '市场鉴权',
@@ -4659,8 +4826,14 @@ window.__ModuleLoader__.load({
       'player.gamepad': 'Gamepad connected',
       'player.fullscreen': 'Fullscreen',
       'player.exitFullscreen': 'Exit fullscreen',
-      'player.crt': 'CRT effect',
+      'player.crt': 'CRT filter',
       'player.speed': 'Speed',
+      'player.screenMode': 'Screen mode',
+      'player.screenModeTitle': 'Screen mode: {mode}',
+      'player.screenModeChanged': 'Screen mode: {mode}',
+      'player.screen.fit': '4:3',
+      'player.screen.stretch': 'Fill',
+      'player.screen.pixel': 'Pixel',
       'player.volume': 'Volume',
       'player.mute': 'Mute',
       'player.unmute': 'Unmute',
@@ -4714,8 +4887,10 @@ window.__ModuleLoader__.load({
       'settings.keys.default': 'Default · Z=B / X=A',
       'settings.keys.arcade': 'Arcade · Z=A / X=B',
       'settings.keysHint': 'Arrows, Enter and Shift stay the same; only A/B swap.',
-      'settings.crt': 'CRT effect on by default',
+      'settings.crt': 'CRT filter',
       'settings.fps': 'Show FPS',
+      'settings.screen': 'Screen mode',
+      'settings.screenHint': '4:3 matches the old TV look; Fill stretches to the window; Pixel keeps crisp integer scaling. The CRT filter is a separate toggle.',
       'settings.section.data': 'Data and status',
       'settings.dataDir': 'Data directory',
       'settings.auth': 'Market auth',
@@ -4915,6 +5090,8 @@ window.__ModuleLoader__.load({
               },
               getEngine: () => engine,
               getLayout: () => layoutService,
+              screenSizeFor,
+              screenModes: SCREEN_MODES.slice(),
               version: localeVersion,
             }
           } catch {

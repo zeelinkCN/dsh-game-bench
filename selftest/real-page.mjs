@@ -10,8 +10,8 @@
  *   5. 截图 shots/real-*.png（侧栏入口 / 游戏库 / 播放中）
  *
  * 用法：
- *   node real-page.mjs                          # 默认 http://127.0.0.1:61254
- *   DSH_URL=http://127.0.0.1:61254 node real-page.mjs
+ *   node real-page.mjs                          # 默认取 DSH_WEB_URL（本会话为 http://127.0.0.1:60333）
+ *   DSH_URL="http://127.0.0.1:<port>/?token=…" node real-page.mjs
  *
  * 退出码：0 全绿 / 1 有 FAIL / 2 插件未安装或页面未就绪（等待 Lead，不误报 FAIL）/ 3 找不到 Chrome / 4 看门狗超时
  */
@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const SHOTS = join(HERE, 'shots')
 const TMP = join(HERE, 'tmp')
-const DSH_URL = (process.env.DSH_URL || 'http://127.0.0.1:61254').replace(/\/+$/, '')
+const DSH_URL = (process.env.DSH_URL || process.env.DSH_WEB_URL || 'http://127.0.0.1:61254').replace(/\/+$/, '')
 const NODE = process.execPath
 
 const CHROME_CANDIDATES = [

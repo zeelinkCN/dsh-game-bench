@@ -86,6 +86,14 @@ ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
 | `[data-gb-error]` | 错误态容器 | `AUTH` / `NETWORK` 时出现，含可读中文文案 + 重试按钮 |
 | `[data-gb-toast]` | 轻提示 | 安装/存档/读档/崩溃等反馈 |
 | `[data-gb-entry]` | 侧栏入口 | `sidebar.panellist` 渲染的入口按钮（真页验收用；也可用 `aria-label` 含「游戏」） |
+| `[data-gb-screen-mode]` | 播放器控制条 | 值 = `fit\|stretch\|pixel`；点击循环切换（4:3 → 铺满 → 像素整数倍），带 toast |
+| `[data-gb-screen-mode-setting="fit\|stretch\|pixel"]` | 设置页 | 三选一（`role=radio` + `aria-checked`） |
+| `[data-gb-fullscreen]` | 播放器控制条 | 浏览器全屏按钮（`requestFullscreen`，失败静默） |
+| `[data-gb-stage]` | 播放器舞台 | canvas 的可用区域容器（画面模式按它计算尺寸） |
+| `.gb-player.is-controls-hidden` | 播放器根 | 全屏闲置 2.5s 后控制条淡出，指针/按键/触摸恢复 |
+
+验收句柄：`window.__GAME_BENCH__.screenSizeFor(mode, availW, availH)` 为纯函数，验收直接断言：
+`fit` → 4:3（`w/h = 4/3`，高度优先）；`stretch` → 精确等于入参；`pixel` → `256/240` 的整数倍。
 
 播放器：`[data-gb="root"] canvas`，内部分辨率固定 **256×240**（engine 只设内部分辨率，
 CSS 缩放/`image-rendering: pixelated` 由 client 负责），画布必须真实绘制（非全黑像素 > 500）。
@@ -101,7 +109,8 @@ CSS 缩放/`image-rendering: pixelated` 由 client 负责），画布必须真�
 ## 6. 行为要求
 
 ### 6.1 游戏库
-内置 7 款卡片（`[data-gb-card]`），真实封面（`naturalWidth>0`）与标题；市场已安装游戏追加其后。
+内置卡片（`[data-gb-card]`）数量 = `/library.builtinCount`（本机 8 = public demo + 本机私有 7 款；
+干净 clone 为 1），真实封面（`naturalWidth>0`）与标题；市场已安装游戏追加其后。
 离线（`/library` 本地 + 内置 ROM）必须可玩。
 
 ### 6.2 市场
@@ -111,6 +120,8 @@ tab 切换 → 合集 chips + 卡片；搜索命中（「魂斗罗」「坦克�
 
 ### 6.3 播放器与输入
 点卡片 → `player` 视图 + `[data-gb-start]` → 点开始 → canvas 256×240 真实像素、帧推进（连续两次像素不同）。
+画面模式：`fit`（4:3 电视比例）/ `stretch`（铺满，允许变形）/ `pixel`（整数倍像素清晰），
+控制条按钮循环切换 + 设置页三选一，选择持久化；全屏时控制条 2.5s 闲置自动隐藏。
 键盘：`ArrowUp/Down/Left/Right`、`Z`(A)、`X`(B)、`Enter`(START)、`Shift`(SELECT)；
 **焦点在 `input/textarea/[contenteditable]` 时一律不接管、不 `preventDefault`、不 `setButton`**；
 失焦 / 切面板 `releaseAll()`。engine 不得绑定 document 级键盘（由 client 决定）。
@@ -130,6 +141,7 @@ tab 切换 → 合集 chips + 卡片；搜索命中（「魂斗罗」「坦克�
 | 2 | 游戏库内置卡片数 = `/library.builtinCount`（本机 8 张：demo + 私有 7 款）、真实封面/标题 | 离线 harness | `run.mjs [2]` |
 | 3 | 播放器：视图、开始遮罩、canvas 256×240、非黑像素 > 500、帧推进 | 离线 harness | `run.mjs [3]` |
 | 4 | 键盘：engine 收到按键（按下+抬起）、画面变化；输入框不抢键/不 preventDefault、打字正确 | 离线 harness | `run.mjs [4]` |
+| 4b | 画面模式：按钮默认 fit、循环 fit→stretch→pixel→fit、canvas CSS 尺寸符合 `screenSizeFor`、设置页三选一、全屏闲置隐藏控制条 | 离线 harness | `run.mjs [3c]` |
 | 5 | 存档：IndexedDB `<gameId>#1`、state > 1000B、重置后读档恢复 | 离线 harness | `run.mjs [5]` |
 | 6 | 市场：合集 chips、卡片、搜索「魂斗罗/坦克大战」、安装 → 已安装 + 库 +1 | 离线 harness | `run.mjs [6]` |
 | 7 | 错误态：AUTH 401 引导 + 重试；NETWORK 502 降级说明 + 重试；内置游戏仍可用 | 离线 harness | `run.mjs [6]` |
@@ -140,7 +152,7 @@ tab 切换 → 合集 chips + 卡片；搜索命中（「魂斗罗」「坦克�
 | 10c | Host 真实路由：/status /library /catalog /market /rom /cover /install /uninstall /settings /sync、SHA 校验、并发去重、鉴权降级 | Host 自测（host-market 提供，QA 复跑） | `node server/selftest.mjs` |
 | 11 | 真实 DSH 页面：侧栏入口出现、点击开面板、库、开始、canvas 非黑且帧在动 | 真页 — **BLOCKED**（桌面版根 URL 需 `dsh web` 打印的带 token URL，无法从环境自取） | `real-page.mjs`（未鉴权时退出码 2，不误报 FAIL） |
 | 11b | 真实环境模块级证据：live Client `sidebar.panellist` 出现 `{id:"game-bench", order, active:true}`、`main` 槽已注册 | 真页（`cordis_inspect_query`，Lead 执行） | 已确认（见 §7.1） |
-| 11c | 真实 Host 接口：/status、/library、7 款 ROM 字节+SHA、7 张封面 PNG、jsnes/engine.js、/market 1131 款、真实 install→SHA 校验→uninstall 回滚 | 真实环境（不需要鉴权） | `real-api.mjs` |
+| 11c | 真实 Host 接口：/status、/library、全部内置 ROM 字节+SHA（本机 8/8）、全部封面 PNG、jsnes/engine.js、/market 1131 款、真实 install→SHA 校验→uninstall 回滚 | 真实环境（不需要鉴权；URL 取 `DSH_WEB_URL`） | `real-api.mjs` |
 | 12 | 真实页面音频实际发声、真实像素级目视、手柄 | 人工（Lead/用户） | 不在自动脚本范围（headless 静音） |
 
 ### 7.1 真实页面验收现状（不写成 PASS）

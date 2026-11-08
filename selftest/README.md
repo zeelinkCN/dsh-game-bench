@@ -76,7 +76,10 @@ node run.mjs
 | `00-library-dark.png` | 游戏库（深色，内置 demo + 本机私有 7 款，共 8 张，含继续上次 hero） |
 | `11-sidebar-entry.png` | 侧栏入口 6× 放大 |
 | `01-player-start-overlay.png` | 播放器「点击开始」遮罩（CRT 扫描线） |
-| `02-player-running.png` | 真实 NES 画面运行中（优先本机经典：超级玛丽 title）+ 底部控制条 |
+| `02-player-running.png` | 真实 NES 画面运行中（优先本机经典：超级玛丽 title）+ 底部控制条（fit 4:3） |
+| `02b-player-stretch.png` `02c-player-pixel.png` `02d-player-fullscreen.png` | 画面模式：铺满 / 像素整数倍 / 真实全屏（CDP 手势触发 requestFullscreen） |
+| `02e-player-crt.png` | 手动开启 CRT 滤镜（默认关闭） |
+| `16-settings.png` | 设置页（画面模式三选一） |
 | `03-keyboard.png` | 键盘输入后画面 |
 | `05-save.png` | 存档到槽位 1（toast「已存入存档位 1」） |
 | `06-load-restored.png` | 重置后读档恢复 |
@@ -101,7 +104,7 @@ settings 权限、鉴权降级）由 `../server/selftest.mjs` 覆盖，QA 复跑
 
 | 脚本 | 被测对象 | 环境 | 结果（最近一次） |
 | --- | --- | --- | --- |
-| `run.mjs` | 真实 client.js + engine.js/jsnes | 真实 Chrome + **mock Host** | PASS 81 / FAIL 0 |
+| `run.mjs` | 真实 client.js + engine.js/jsnes | 真实 Chrome + **mock Host** | PASS 99 / FAIL 0 |
 | `real-api.mjs` | 真实 Host 路由（已安装插件） | 真实 DSH 进程 + 真实 GitHub | PASS 35 / FAIL 0 |
 | `real-page.mjs` | 真实 DSH 页面像素级 | 真实桌面窗口 | **BLOCKED**（根 URL 需 token） |
 | `../server/selftest.mjs` | Host 路由（临时数据目录） | 真实 GitHub | 见交付报告 |

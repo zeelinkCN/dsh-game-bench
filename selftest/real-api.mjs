@@ -15,8 +15,8 @@
  * 注意：install/uninstall 会写真实数据目录（`/status.dataDir`），脚本保证 finally 清理；
  * 只安装 1 款小游戏，测试后卸载并断言 /library 回到安装前状态。
  *
- * 用法：node real-api.mjs
- *       GB_HOST_URL=http://127.0.0.1:61254 node real-api.mjs
+ * 用法：node real-api.mjs                       （优先 DSH_WEB_URL，其次 GB_HOST_URL）
+ *       GB_HOST_URL=http://127.0.0.1:60333 node real-api.mjs
  * 退出码：0 无 FAIL（允许 SKIP）/ 1 有 FAIL / 2 插件路由不可达（未安装或未激活）
  */
 import { createHash } from 'node:crypto'
@@ -26,7 +26,7 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const PLUGIN = join(HERE, '..')
-const BASE = (process.env.GB_HOST_URL || 'http://127.0.0.1:61254').replace(/\/+$/, '')
+const BASE = (process.env.GB_HOST_URL || process.env.DSH_WEB_URL || 'http://127.0.0.1:61254').replace(/\/+$/, '')
 const API = `${BASE}/game-bench/api`
 const sha256 = (buf) => createHash('sha256').update(buf).digest('hex')
 
