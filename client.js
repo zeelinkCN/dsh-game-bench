@@ -1839,17 +1839,96 @@ window.__ModuleLoader__.load({
         h('rect', { x: 19.1, y: 22.2, width: 2.2, height: 1.7, fill: '#fff8ec', opacity: 0.86 }),
       )
     }
+    /* 线稿摇杆：几何来自 Lucide「joystick」(ISC License, https://lucide.dev)，
+    * 小尺寸用更粗描边保证 20px 可辨；颜色由调用方决定。 */
+    function JoystickGlyph(props) {
+      const size = (props && props.size) || 20
+      const color = (props && props.color) || 'currentColor'
+      const stroke = (props && props.stroke) || 2.1
+      return h(
+        'svg',
+        {
+          width: size,
+          height: size,
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: color,
+          strokeWidth: stroke,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
+          'aria-hidden': 'true',
+          focusable: 'false',
+        },
+        h('path', { d: 'M21 17a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2Z' }),
+        h('path', { d: 'M6 15v-2' }),
+        h('path', { d: 'M12 15V9' }),
+        h('circle', { cx: 12, cy: 6, r: 3 }),
+      )
+    }
 
-    /* 侧栏入口图标：红牌 + 白色像素摇杆（球头/杆/底座）+ 两颗金色按键。
-    * 外层 span 负责底色/圆角/尺寸（等同 DSH 侧栏 chip），内层 SVG 只占 size*0.7
-    * 并留安全边，避免小尺寸下描边贴边被裁、放大后与相邻按钮互相压。
-    * 图形是「球头摇杆 + 底座 + 两颗键」——20px 下也能一眼认出是游戏机。 */
+    /* 侧栏/品牌图标：斜向七彩条纹牌 + 白色线稿摇杆。
+    * 七种颜色按固定 4 单位宽度循环铺满，避免角落色块与中心色带宽度不一致；摇杆来自 Lucide「joystick」
+    * (ISC License, https://lucide.dev)，小尺寸加粗描边保证 20px 可辨。 */
+    let gbIdSeed = 0
+    function JoyBadge(props) {
+      const size = (props && props.size) || 20
+      const stroke = (props && props.stroke) || (size <= 20 ? 2.4 : size <= 30 ? 2.1 : 1.9)
+      const glyph = (props && props.glyph) || '#ffffff'
+      const id = React.useMemo
+        ? React.useMemo(() => 'jbg' + (++gbIdSeed), [])
+        : 'jbg' + (++gbIdSeed)
+      return h(
+        'svg',
+        {
+          width: size,
+          height: size,
+          viewBox: '0 0 40 40',
+          'aria-hidden': 'true',
+          focusable: 'false',
+        },
+        h(
+          'defs',
+          null,
+          h(
+            'pattern',
+            { id, patternUnits: 'userSpaceOnUse', width: 28, height: 28, patternTransform: 'rotate(45)' },
+            ['#df5366', '#e89542', '#e6c653', '#52a978', '#479fc1', '#557dcc', '#9577b8'].map((color, i) =>
+              h('rect', { key: color, x: i * 4, y: 0, width: 4, height: 28, fill: color }),
+            ),
+          ),
+        ),
+        h('rect', { x: 0, y: 0, width: 40, height: 40, rx: 11.5, fill: 'url(#' + id + ')' }),
+        h('rect', {
+          x: 0.6,
+          y: 0.6,
+          width: 38.8,
+          height: 38.8,
+          rx: 11,
+          fill: 'none',
+          stroke: 'rgba(255,255,255,.28)',
+          strokeWidth: 1.2,
+        }),
+        h(
+          'g',
+          {
+            transform: 'translate(6.8 6.8) scale(1.1)',
+            fill: 'none',
+            stroke: glyph,
+            strokeWidth: stroke,
+            strokeLinecap: 'round',
+            strokeLinejoin: 'round',
+          },
+          h('path', { d: 'M21 17a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2Z' }),
+          h('path', { d: 'M6 15v-2' }),
+          h('path', { d: 'M12 15V9' }),
+          h('circle', { cx: 12, cy: 6, r: 3 }),
+        ),
+      )
+    }
+
     function PanelIcon(props) {
       const size = (props && props.size) || 20
       const active = !!(props && props.active)
-      const inner = Math.max(9, Math.round(size * 0.7))
-      const body = active ? '#eaf3ff' : '#f4f8ff'
-      const key = active ? '#a5f3fc' : '#22d3ee'
       return h(
         'span',
         {
@@ -1858,32 +1937,15 @@ window.__ModuleLoader__.load({
           style: {
             width: size + 'px',
             height: size + 'px',
-            borderRadius: Math.round(size * 0.26) + 'px',
-            background: active
-              ? 'linear-gradient(160deg,#60a5fa,#2563eb)'
-              : 'linear-gradient(160deg,#3b82f6,#1e40af)',
+            display: 'block',
+            lineHeight: 0,
+            borderRadius: Math.round(size * 0.28) + 'px',
+            filter: active ? 'brightness(1.08)' : 'none',
+            transform: 'none',
+            transition: 'filter 160ms ease, transform 160ms ease',
           },
         },
-        h(
-          'svg',
-          {
-            width: inner,
-            height: inner,
-            viewBox: '0 0 16 16',
-            shapeRendering: 'crispEdges',
-            'aria-hidden': 'true',
-            focusable: 'false',
-          },
-          /* 球头 */
-          h('circle', { cx: 5.6, cy: 4.2, r: 3.2, fill: body }),
-          /* 摇杆 */
-          h('rect', { x: 4.8, y: 6.2, width: 1.8, height: 5.2, fill: body }),
-          /* 底座 */
-          h('rect', { x: 1.2, y: 10.4, width: 13.6, height: 3.8, rx: 1.3, fill: body }),
-          /* 两颗按键 */
-          h('rect', { x: 9.1, y: 11.2, width: 1.9, height: 2.1, fill: key }),
-          h('rect', { x: 11.7, y: 11.2, width: 1.9, height: 2.1, fill: key }),
-        ),
+        h(JoyBadge, { size: size }),
       )
     }
 
@@ -1995,7 +2057,7 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { className: 'gb-brand' },
-          h('span', { className: 'gb-brand-mark', 'aria-hidden': 'true' }, h(PixelPad, { size: 38 })),
+          h('span', { className: 'gb-brand-mark', 'aria-hidden': 'true' }, h(JoyBadge, { size: 40, stroke: 1.9 })),
           h(
             'div',
             { className: 'gb-brand-text' },
@@ -3862,9 +3924,8 @@ window.__ModuleLoader__.load({
     .gb-brand{display:flex;align-items:center;gap:12px;min-width:0}
     .gb-brand-mark{
       display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:15px;
-      background:linear-gradient(160deg,#fff8ea,#ffe9c6);
-      border:1px solid color-mix(in srgb,var(--gb-accent) 18%,transparent);
-      box-shadow:0 10px 22px -14px color-mix(in srgb,var(--gb-accent) 55%,transparent);
+      background:transparent;
+      box-shadow:0 10px 22px -16px rgba(20,16,40,.55);
     }
     .gb-brand-text{min-width:0}
     .gb-brand-title{margin:0;font-size:21px;font-weight:760;letter-spacing:-.02em;line-height:1.2}

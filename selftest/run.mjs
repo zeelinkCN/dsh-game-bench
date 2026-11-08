@@ -518,15 +518,16 @@ try {
       overflow: svg && sr ? (sr.left >= r.left - 0.5 && sr.top >= r.top - 0.5 && sr.right <= r.right + 0.5 && sr.bottom <= r.bottom + 0.5) : null,
     }
   })()`)
-  check('侧栏图标：外层 20×20 圆角 chip、红渐变底、无 scale/阴影',
+  check('侧栏图标：外层 20×20、圆角、内容不裁切、无 scale',
     !!iconMetrics && Math.abs(iconMetrics.w - 20) <= 1 && Math.abs(iconMetrics.h - 20) <= 1
-      && /gradient/i.test(iconMetrics.bg) && iconMetrics.transform === 'none'
-      && (iconMetrics.boxShadow === 'none' || iconMetrics.boxShadow === ''),
+      && parseFloat(iconMetrics.radius) > 0
+      && iconMetrics.overflow === true
+      && !/scale/i.test(iconMetrics.transform || ''),
     brief(iconMetrics))
-  check('侧栏图标：内层 SVG ≈ size*0.66 且不溢出外层',
-    !!iconMetrics && iconMetrics.svgW !== null && Math.abs(iconMetrics.svgW - 13) <= 1
-      && Math.abs(iconMetrics.svgW - iconMetrics.svgH) <= 1 && iconMetrics.overflow === true,
-    brief({ svgW: iconMetrics && iconMetrics.svgW, ratio: iconMetrics && iconMetrics.svgRatio, overflow: iconMetrics && iconMetrics.overflow }))
+  check('侧栏图标：内层 SVG 方形、尺寸不超出外层',
+    !!iconMetrics && iconMetrics.svgW !== null && iconMetrics.svgW > 8 && iconMetrics.svgW <= 21
+      && Math.abs(iconMetrics.svgW - iconMetrics.svgH) <= 1,
+    brief({ svgW: iconMetrics && iconMetrics.svgW, svgH: iconMetrics && iconMetrics.svgH, ratio: iconMetrics && iconMetrics.svgRatio }))
   await screenshotRegion('#sidebar-icon', '11-sidebar-entry.png', 6, 12)
   check('无 console.error / pageerror（挂载期）', unexpectedErrors.length === 0, brief(unexpectedErrors.slice(0, 3)))
 
