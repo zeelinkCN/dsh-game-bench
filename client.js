@@ -745,7 +745,6 @@ window.__ModuleLoader__.load({
       const index = SCREEN_MODES.indexOf(state.ui.screenMode)
       const next = SCREEN_MODES[(index + 1) % SCREEN_MODES.length]
       patchUi({ screenMode: next })
-      toast(translate('player.screenModeChanged', { mode: translate('player.screen.' + next) }), 'info')
     }
 
     function isTypingTarget(element) {
