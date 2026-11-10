@@ -14,7 +14,7 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const VERSION = '1.0.0'
+export const VERSION = '1.1.0'
 
 /** Host API 前缀（与 docs/API.md 一致，前端同源调用） */
 export const ROUTE = '/game-bench/api'
@@ -39,6 +39,8 @@ export const VENDOR_FILE = join(PLUGIN_ROOT, 'vendor', 'jsnes.min.js')
 
 /** 自研模拟器封装 */
 export const ENGINE_FILE = join(PLUGIN_ROOT, 'engine.js')
+export const GAMEPADS_FILE = join(PLUGIN_ROOT, 'gamepads.js')
+export const GAMEPAD_SETTINGS_FILE = join(PLUGIN_ROOT, 'gamepad-settings.js')
 
 /** 游戏 id 规范：nes-<64 位小写十六进制 sha256> */
 export const ID_RE = /^nes-[0-9a-f]{64}$/

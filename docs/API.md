@@ -25,7 +25,7 @@ Host 入口：`index.js`，`export const inject = ['webServer']`，`export funct
 {
   "ok": true,
   "data": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "builtinCount": 7,
     "installedCount": 0,
     "dataDir": "/Users/xxx/.dsh-game-bench",

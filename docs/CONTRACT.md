@@ -50,7 +50,10 @@ dsh-game-bench/
 - `/install` 幂等、300ms 级延迟；`/uninstall`；`/rom/<id>`、`/cover/<id>` 返回真实字节。
 - 失败一律返回 `{ok:false,error,code}` 信封；`AUTH`（401）/`NETWORK`（502）两种错误态 UI 必须可渲染。
 - `/settings` GET/POST（token 不回显）；`/sync` 强制刷新。
-- `/vendor/jsnes.js`、`/engine.js`：`application/javascript`，文件缺失 404（面板显示「模拟器运行时缺失」，不得崩溃）。
+- `/vendor/jsnes.js`、`/engine.js`、`/gamepads.js`、`/gamepad-settings.js`：`application/javascript`，
+  文件缺失 404（面板显示「模拟器运行时缺失」，不得崩溃）。
+- 手柄静态路由由 Host 提供（`server/http.mjs` add('gamepads.js' / 'gamepad-settings.js')）；
+  mock 侧支持 `GB_GAMEPADS` / `GB_GAMEPAD_SETTINGS` 覆盖路径。
 
 ## 3. Client slots（`client.js` `apply(ctx)`）
 
@@ -89,11 +92,24 @@ ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
 | `[data-gb-screen-mode]` | 播放器控制条 | 值 = `fit\|stretch\|pixel`；点击循环切换（4:3 → 铺满 → 像素整数倍），带 toast |
 | `[data-gb-screen-mode-setting="fit\|stretch\|pixel"]` | 设置页 | 三选一（`role=radio` + `aria-checked`） |
 | `[data-gb-fullscreen]` | 播放器控制条 | 浏览器全屏按钮（`requestFullscreen`，失败静默） |
-| `[data-gb-stage]` | 播放器舞台 | canvas 的可用区域容器（画面模式按它计算尺寸） |
+| `[data-gb-stage]` | 播放器舞台 | （实际挂在 `.gb-screen` 画框上）canvas 的可用区域容器（画面模式按它计算尺寸） |
+| `[data-gb-menu="<id>"]` | 库卡右上角 | 打开/关闭库卡菜单（非右键入口） |
+| `[data-gb-launch-menu="<id>"]` | 库卡内 | 菜单容器（`role=menu`）；右键卡片时以 `position:fixed` 出现在光标处 |
+| `[data-gb-restart="<id>"]` | 菜单项 | 重新开始（新开，`startSlot=null`，不读存档） |
+| `[data-gb-resume-slot="auto\|1\|2\|3"]` | 菜单项 | 从该存档槽继续（`playGame(game, slot)` → `bootPlayer` 读档并 `await engine.loadState`） |
+| `[data-gb-no-saves]` | 菜单提示 | 该游戏没有任何存档时的空态 |
+| `[data-gb-gamepad-settings]` | 设置页 | 手柄设置面板（标准 Pro / raw JoyCon 设备面板） |
+| `[data-gb-gamepad="<deviceKey>"]` | 设置页 | 单个手柄设备面板 |
+| `[data-gb-switch="gb-merge-joycon"]` / `gb-swap-ab-<i>` | 设置页 | 左右 Joy-Con 合并 1P / 交换 A/B |
+| `[data-gb-pad-deadzone="<key>"]` / `[data-gb-pad-calibrate]` / `[data-gb-pad-reset]` / `[data-gb-calibrating]` / `[data-gb-pad-input]` / `[data-gb-pad-button]` / `[data-gb-pad-axis]` / `[data-gb-gamepad-notice]` | 设置页 | 死区、校准入口/进行态、输入可视化、通知 |
+| `[data-gb-controls="hidden\|visible"]` | 播放器根 `[data-gb-player]` | 控制条显隐；隐藏时控制条 `opacity≈0` + `pointer-events:none` |
 | `.gb-player.is-controls-hidden` | 播放器根 | 全屏闲置 2.5s 后控制条淡出，指针/按键/触摸恢复 |
 
-验收句柄：`window.__GAME_BENCH__.screenSizeFor(mode, availW, availH)` 为纯函数，验收直接断言：
-`fit` → 4:3（`w/h = 4/3`，高度优先）；`stretch` → 精确等于入参；`pixel` → `256/240` 的整数倍。
+验收句柄：`window.__GAME_BENCH__.screenSizeFor(mode, availW, availH, dpr)` 为纯函数（第 4 参 DPR，默认 1），验收直接断言：
+`fit` → 4:3（`w/h = 4/3`，高度优先）；`stretch` → 精确等于入参；**`pixel`（默认）** → 按**设备物理像素**取
+`256/240` 的整数倍：`w*dpr/256` 与 `h*dpr/240` 必须是**同一个整数**（DPR 1 / 1.25 / 1.5 / 2 均成立，无小数物理像素）。
+`measure` 时 screen frame 只允许 `transform: translate(dx,dy)` 做**绝对设备像素吸附**（screen 边界的
+`left*dpr` / `top*dpr` 接近整数，±0.02），不得使用 scale/zoom。
 
 播放器：`[data-gb="root"] canvas`，内部分辨率固定 **256×240**（engine 只设内部分辨率，
 CSS 缩放/`image-rendering: pixelated` 由 client 负责），画布必须真实绘制（非全黑像素 > 500）。
@@ -120,11 +136,36 @@ tab 切换 → 合集 chips + 卡片；搜索命中（「魂斗罗」「坦克�
 
 ### 6.3 播放器与输入
 点卡片 → `player` 视图 + `[data-gb-start]` → 点开始 → canvas 256×240 真实像素、帧推进（连续两次像素不同）。
-画面模式：`fit`（4:3 电视比例）/ `stretch`（铺满，允许变形）/ `pixel`（整数倍像素清晰），
-控制条按钮循环切换 + 设置页三选一，选择持久化；全屏时控制条 2.5s 闲置自动隐藏。
+画面模式：**默认 `pixel`**（按 DPR 保持设备物理像素整数倍，避免 125%/150% 缩放时 2x 变成 2.5x）；
+`fit`（4:3 电视比例，横向 1.25x 观感拉伸）/ `stretch`（铺满，允许变形）仍可逐一切换。
+控制条按钮循环 pixel→fit→stretch→pixel + 设置页三选一，选择持久化；窗口/全屏闲置 2.5s 自动隐藏控制条。
+注意：`stage` 容器自身的 CSS 原点是整数 CSS px，在 DPR=1.25/1.5 时并非设备像素对齐，因此「screen 相对 stage 的
+原点×DPR」不保证整数；渲染对齐的不变量是 **screen 绝对原点 × DPR 为整数**（实现即如此，验收按此断言）。
 键盘：`ArrowUp/Down/Left/Right`、`Z`(A)、`X`(B)、`Enter`(START)、`Shift`(SELECT)；
 **焦点在 `input/textarea/[contenteditable]` 时一律不接管、不 `preventDefault`、不 `setButton`**；
 失焦 / 切面板 `releaseAll()`。engine 不得绑定 document 级键盘（由 client 决定）。
+
+### 6.3b 库卡启动菜单
+- 右键卡片（`contextmenu`）→ 固定定位菜单出现在光标处；卡片右上角菜单按钮也可打开（卡内绝对定位）；同一时刻只有一个菜单
+- 点外部 / Esc 关闭；**普通 click 卡片仍直接启动**（不弹菜单、不读档）
+- 「重新开始」→ 新开（不 `loadState`）；「从存档继续」→ `playGame(game, slot)`，`bootPlayer` 在 `loadRom` 后
+  `readSave(game.id, slot)` 并 `await engine.loadState`，随后点「开始」继续跑帧
+- 菜单 `savedSlots` 与 IndexedDB `saves` 一致：槽位集合、`updatedAt` 倒序、`timeText(updatedAt)` = `MM-DD HH:mm`
+- 无存档显示 `[data-gb-no-saves]`
+
+### 6.3c 控制条自动隐藏（窗口 + 全屏）
+- 2.5s 无操作隐藏（`data-gb-controls="hidden"`，控制条 opacity≈0 / pointer-events:none），rAF 游戏继续跑
+- 鼠标进入 player 底部 100px / 顶部 48px `pointermove` 唤出；触屏 `pointerdown(pointerType=touch)` 唤出；
+  **游戏 keydown 不唤出**；暂停 / 存档面板打开时常显；Tab/focusin 也唤出
+- 窗口与全屏同一浮层行为（不因显隐 reflow）；退出播放器后 window/document/player 监听净增 = 0
+
+### 6.3d 手柄（gamepads.js + gamepad-settings.js）
+- `loadCore` 只依赖 `gamepads.js`；`gamepad-settings.js` 由设置页懒加载
+- 标准手柄按 `mapping=standard` 直接映射；两台标准手柄分别 1P/2P；JoyCon L/R 可合并 1P；非标准任天堂手柄标记需校准
+- 16ms 轮询 `GameBenchGamepads.assign/decode` → `engine.setButton(name, down, player)`，**边沿触发**（按住不重复）
+- 设置页：设备面板、合并 JoyCon 开关、Swap A/B、死区滑杆、校准/重置、输入可视化、通知；profile 持久化在 `ui.padProfiles`，
+  合并开关在 `ui.padPaired`（经 `patchUi` 写 IndexedDB settings）
+- 真实 Host 必须提供 `/game-bench/api/gamepads.js` 与 `/gamepad-settings.js`（client `loadPadModules` 会 404 报错）
 
 ### 6.4 存档
 存档 → IndexedDB `saves` 出现 `<gameId>#1`（state 字节 > 1000）；重置 → 读档 → 画面恢复（canvas 非全黑）+ 可读反馈。
@@ -141,14 +182,20 @@ tab 切换 → 合集 chips + 卡片；搜索命中（「魂斗罗」「坦克�
 | 2 | 游戏库内置卡片数 = `/library.builtinCount`（本机 8 张：demo + 私有 7 款）、真实封面/标题 | 离线 harness | `run.mjs [2]` |
 | 3 | 播放器：视图、开始遮罩、canvas 256×240、非黑像素 > 500、帧推进 | 离线 harness | `run.mjs [3]` |
 | 4 | 键盘：engine 收到按键（按下+抬起）、画面变化；输入框不抢键/不 preventDefault、打字正确 | 离线 harness | `run.mjs [4]` |
-| 4b | 画面模式：按钮默认 fit、循环 fit→stretch→pixel→fit、canvas CSS 尺寸符合 `screenSizeFor`、设置页三选一、全屏闲置隐藏控制条 | 离线 harness | `run.mjs [3c]` |
+| 4b | 画面模式：新安装默认 pixel、循环 pixel→fit→stretch→pixel、pixel 按 DPR 保持物理像素整数倍并吸附原点、设置页三选一、全屏/窗口闲置隐藏控制条 | 离线 harness | `run.mjs [3c]` |
 | 5 | 存档：IndexedDB `<gameId>#1`、state > 1000B、重置后读档恢复 | 离线 harness | `run.mjs [5]` |
+| 5b | 控制条自动隐藏：窗口/全屏 2.5s 隐藏、底部/顶部/触屏唤出、keydown 不唤出、暂停/面板常显、无残留监听 | 离线 harness | `run.mjs [5b]` |
+| 5c | 库卡右键菜单：fixed 定位、Esc/外部关闭、单菜单、重新开始不读档、从存档继续 loadState 字节匹配、无存档空态、savedSlots 时间正确 | 离线 harness | `run.mjs [5c]` |
+| 5d | 手柄：两台标准手柄 1P/2P、边沿去抖、摇杆方向、padProfiles 字段 | 离线 harness | `run.mjs [5d]` |
+| 5e | 手柄设置页：Pro + raw JoyCon 设备面板、合并开关、校准入口/进行/取消 notice、无 console error | 离线 harness | `run.mjs [5e]` |
 | 6 | 市场：合集 chips、卡片、搜索「魂斗罗/坦克大战」、安装 → 已安装 + 库 +1 | 离线 harness | `run.mjs [6]` |
 | 7 | 错误态：AUTH 401 引导 + 重试；NETWORK 502 降级说明 + 重试；内置游戏仍可用 | 离线 harness | `run.mjs [6]` |
 | 8 | 主题：深/浅色 token 生效、面板颜色随主题变化 | 离线 harness | `run.mjs [7]` |
 | 9 | 响应式：600 / 1440 无横向溢出、面板有可用尺寸 | 离线 harness | `run.mjs [8]` |
 | 10 | 运行期：无未捕获异常 / console.error、engine 无 crashed | 离线 harness | `run.mjs [9]` |
 | 10b | 全部内置 ROM（本机 8 款）经真实 engine 渲染非黑 + saveState/loadState（gzip）往返 | 离线 harness | `run.mjs [3b]` |
+| 10d | 渲染缩放诊断：canvas 无 CSS transform/zoom、image-rendering、pixel 物理像素整数倍（DPR 1/1.25/1.5/2）、screen 绝对原点设备像素吸附（±0.02）、frame 仅纯 translate、fit 缩放记录 | 离线 harness | `run.mjs [8b]` |
+| 10e | 真实 Host 手柄静态路由 `/gamepads.js`、`/gamepad-settings.js` | 真实环境 | `real-api.mjs`（需重装插件后转绿） |
 | 10c | Host 真实路由：/status /library /catalog /market /rom /cover /install /uninstall /settings /sync、SHA 校验、并发去重、鉴权降级 | Host 自测（host-market 提供，QA 复跑） | `node server/selftest.mjs` |
 | 11 | 真实 DSH 页面：侧栏入口出现、点击开面板、库、开始、canvas 非黑且帧在动 | 真页 — **BLOCKED**（桌面版根 URL 需 `dsh web` 打印的带 token URL，无法从环境自取） | `real-page.mjs`（未鉴权时退出码 2，不误报 FAIL） |
 | 11b | 真实环境模块级证据：live Client `sidebar.panellist` 出现 `{id:"game-bench", order, active:true}`、`main` 槽已注册 | 真页（`cordis_inspect_query`，Lead 执行） | 已确认（见 §7.1） |
@@ -184,6 +231,8 @@ cd .. && node server/selftest.mjs   # Host 真实路由自测（host-market 提�
 - mock Host（`server.mjs`）：内置清单与 Host 相同地合并 `../games/builtin.json` + `../games/builtin.local.json`
   并读真实 ROM/PNG（本机 8 款）；市场 96 款切片自
   `../../.lead-tmp/gb/library`（catalog 1131 款 + store 7 个合集），`/rom/<id>`、`/cover/<id>` 返回真实字节。
+- 截图补充：`02f/02g/02h`（控制条隐藏/唤出/全屏隐藏）、`02i/02j`（右键菜单/无存档空态）、`02k`（pixel DPR1）、
+  `17/18`（手柄设置/校准态）。
 - 失败模式：`?mode=auth`（market/catalog 401 AUTH）、`?mode=offline`（502 NETWORK）、`?mode=slow`（1.5s 延迟）；
   也可 `POST /__config {"mode":"auth"}`。
 - 离线 harness 的 Host 是 **mock**（`selftest/server.mjs`，按 API.md 实现）；真实 Host 路由由

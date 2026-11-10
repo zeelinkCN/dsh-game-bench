@@ -150,6 +150,24 @@ check('engine.js 暴露 window.GameBenchCore', /GameBenchCore/.test(engineText))
 const engineVer = await req('/engine.js').then(() => (engineText.match(/ENGINE_VERSION\s*=\s*'([^']+)'/) || [])[1] || null)
 console.log(`  · engine version = ${engineVer}`)
 
+/* 手柄运行时模块（client.loadPadModules 必需；Host 必须提供这两条静态路由） */
+const pads = await req('/gamepads.js')
+const padsText = pads.buf.toString('utf8')
+check('GET /gamepads.js 200 + JS（GameBenchGamepads / assign/decode）',
+  pads.status === 200 && pads.buf.length > 1000 && /GameBenchGamepads/.test(padsText) && /assign/.test(padsText),
+  { status: pads.status, size: pads.buf.length })
+const padSettings = await req('/gamepad-settings.js')
+const padSettingsText = padSettings.buf.toString('utf8')
+check('GET /gamepad-settings.js 200 + JS（GameBenchGamepadSettings.create）',
+  padSettings.status === 200 && padSettings.buf.length > 1000 && /GameBenchGamepadSettings/.test(padSettingsText),
+  { status: padSettings.status, size: padSettings.buf.length })
+if (st.vendor && (st.vendor.gamepads !== undefined || st.vendor.gamepadSettings !== undefined)) {
+  check('/status.vendor 含手柄模块状态（gamepads / gamepadSettings）',
+    st.vendor.gamepads === true && st.vendor.gamepadSettings === true, st.vendor)
+} else {
+  console.log('  · /status.vendor 尚未包含 gamepads 字段（运行中的 Host 是旧激活版本，重装后可断言）')
+}
+
 /* [6] 市场（真实 GitHub；首次预热可能 90s） */
 section('[6] GET /market（真实目录，首次可能预热）')
 let market = null

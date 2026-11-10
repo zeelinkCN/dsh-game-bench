@@ -372,7 +372,9 @@ window.__ModuleLoader__.load({
       crt: false,
       showFps: false,
       keys: 'default',
-      screenMode: 'fit',
+      screenMode: 'pixel',
+      padProfiles: {},
+      padPaired: true,
     }
 
     function normalizeUi(raw) {
@@ -385,6 +387,8 @@ window.__ModuleLoader__.load({
         showFps: !!source.showFps,
         keys: source.keys === 'arcade' ? 'arcade' : 'default',
         screenMode: SCREEN_MODES.indexOf(source.screenMode) >= 0 ? source.screenMode : DEFAULT_UI.screenMode,
+        padProfiles: source.padProfiles && typeof source.padProfiles === 'object' && !Array.isArray(source.padProfiles) ? source.padProfiles : {},
+        padPaired: source.padPaired !== false,
       }
     }
 
@@ -436,6 +440,7 @@ window.__ModuleLoader__.load({
       syncBusy: false,
       mediaConflict: false,
       gamepadConnected: false,
+      gamepadNeedsMapping: false,
       fullscreen: false,
     }
 
@@ -723,13 +728,15 @@ window.__ModuleLoader__.load({
      *  stretch 铺满可用区域（允许变形）
      *  pixel   整数倍像素放大，保持像素清晰
      */
-    function screenSizeFor(mode, availW, availH) {
+    function screenSizeFor(mode, availW, availH, pixelRatio = 1) {
       const width = Math.max(1, Math.round(Number(availW) || 0))
       const height = Math.max(1, Math.round(Number(availH) || 0))
       if (mode === 'stretch') return { w: width, h: height }
       if (mode === 'pixel') {
-        const scale = Math.max(1, Math.floor(Math.min(width / FRAME_W, height / FRAME_H)))
-        return { w: FRAME_W * scale, h: FRAME_H * scale }
+        const ratio = Number.isFinite(pixelRatio) && pixelRatio > 0 ? pixelRatio : 1
+        // 整数倍按设备像素计算，避免 125% 缩放时 CSS 2x 变成物理 2.5x。
+        const scale = Math.max(1, Math.floor(Math.min(width * ratio / FRAME_W, height * ratio / FRAME_H) + 1e-9))
+        return { w: FRAME_W * scale / ratio, h: FRAME_H * scale / ratio }
       }
       const h = Math.min(height, Math.round((width * 3) / 4))
       const w = Math.round((h * 4) / 3)
@@ -818,9 +825,21 @@ window.__ModuleLoader__.load({
       return promise
     }
 
+    let padModulesPromise = null
+    function loadPadModules() {
+      if (!padModulesPromise) {
+        padModulesPromise = (async () => {
+          if (!window.GameBenchGamepads) await loadScript(API + '/gamepads.js?v=1.1.0')
+          if (!window.GameBenchGamepadSettings) await loadScript(API + '/gamepad-settings.js?v=1.1.0')
+        })().catch((error) => { padModulesPromise = null; throw error })
+      }
+      return padModulesPromise
+    }
+
     let corePromise = null
 
     async function loadCore() {
+      if (!window.GameBenchGamepads) await loadScript(API + '/gamepads.js?v=1.1.0')
       if (window.GameBenchCore && typeof window.GameBenchCore.create === 'function') return window.GameBenchCore
       if (corePromise) return corePromise
       corePromise = (async () => {
@@ -912,6 +931,7 @@ window.__ModuleLoader__.load({
       if (engine && engineGameId === game.id && engineCanvas === canvas) return
       teardownPlayer()
       const generation = (engineGen += 1)
+      const startSlot = state.startSlot
       lastEngineSig = ''
       setState({
         playerPhase: 'boot',
@@ -948,6 +968,13 @@ window.__ModuleLoader__.load({
         engineStarted = false
         playerGame = game
         created.loadRom(rom)
+        if (startSlot !== null && startSlot !== undefined) {
+          const saved = await readSave(game.id, startSlot)
+          if (generation !== engineGen) return
+          if (!saved || !saved.state) throw new Error(translate('player.save.emptySlot'))
+          await created.loadState(saved.state)
+          if (generation !== engineGen) return
+        }
         created.setSpeed(state.ui.speed)
         created.setMuted(!!state.ui.muted)
         created.setVolume(state.ui.muted ? 0 : state.ui.volume)
@@ -1282,11 +1309,12 @@ window.__ModuleLoader__.load({
       setState({ keyHintsOpen: !state.keyHintsOpen })
     }
 
-    function playGame(game) {
+    function playGame(game, startSlot = null) {
       if (!game || !game.id) return
       pauseOtherMedia(null)
       setState({
         current: game,
+        startSlot,
         view: 'player',
         playerPhase: 'boot',
         playerError: null,
@@ -1483,7 +1511,10 @@ window.__ModuleLoader__.load({
       pressedCodes.clear()
     }
 
+    let padInputFocused = true
+    function onWindowFocus() { padInputFocused = true }
     function onWindowBlur() {
+      padInputFocused = false
       releaseKeyboard()
       releasePad()
       if (engine) {
@@ -1501,6 +1532,7 @@ window.__ModuleLoader__.load({
       window.addEventListener('keydown', onKeyDown, true)
       window.addEventListener('keyup', onKeyUp, true)
       window.addEventListener('blur', onWindowBlur)
+      window.addEventListener('focus', onWindowFocus)
       startGamepadPolling()
     }
 
@@ -1510,15 +1542,17 @@ window.__ModuleLoader__.load({
       window.removeEventListener('keydown', onKeyDown, true)
       window.removeEventListener('keyup', onKeyUp, true)
       window.removeEventListener('blur', onWindowBlur)
+      window.removeEventListener('focus', onWindowFocus)
       releaseKeyboard()
     }
 
     function releasePad() {
       const eng = engine
-      padDown.forEach((name) => {
+      padDown.forEach((code) => {
+        const [player, name] = code.split(':')
         if (eng) {
           try {
-            eng.setButton(name, false)
+            eng.setButton(name, false, Number(player))
           } catch {
             /* ignore */
           }
@@ -1542,50 +1576,39 @@ window.__ModuleLoader__.load({
       if (padTimer) return
       padTimer = setInterval(() => {
         const eng = engine
-        if (!eng || !engineStarted) return
-        const pads = gamepadList()
-        let pad = null
-        for (let index = 0; index < pads.length; index += 1) {
-          if (pads[index] && pads[index].connected) {
-            pad = pads[index]
-            break
-          }
+        const input = window.GameBenchGamepads
+        if (!eng || !engineStarted || !input) return
+        const assigned = input.assign(gamepadList(), state.ui.padPaired)
+        const connected = assigned.length > 0
+        const needsMapping = assigned.some(({ pad }) => {
+          const profile = state.ui.padProfiles[input.key(pad)]
+          const bindings = profile && profile.bindings
+          return input.identify(pad).needsMapping && (!bindings || Object.keys(bindings).length === 0)
+        })
+        if (connected !== state.gamepadConnected || needsMapping !== state.gamepadNeedsMapping) {
+          setState({ gamepadConnected: connected, gamepadNeedsMapping: needsMapping })
         }
-        const connected = !!pad
-        if (connected !== state.gamepadConnected) setState({ gamepadConnected: connected })
-        if (!pad) {
+        if (!connected || document.hidden || !padInputFocused || state.engineState.paused || state.savePanel) {
           releasePad()
           return
         }
         const next = new Set()
-        const buttons = pad.buttons || []
-        Object.keys(PAD_BUTTONS).forEach((index) => {
-          const button = buttons[index]
-          if (button && (button.pressed || num(button.value, 0) > 0.5)) next.add(PAD_BUTTONS[index])
+        assigned.forEach(({ pad, player }) => {
+          const decoded = input.decode(pad, state.ui.padProfiles[input.key(pad)])
+          decoded.forEach((name) => next.add(player + ':' + name))
         })
-        const axes = pad.axes || []
-        if (num(axes[0], 0) < -0.45) next.add('LEFT')
-        if (num(axes[0], 0) > 0.45) next.add('RIGHT')
-        if (num(axes[1], 0) < -0.45) next.add('UP')
-        if (num(axes[1], 0) > 0.45) next.add('DOWN')
-        next.forEach((name) => {
-          if (!padDown.has(name)) {
-            padDown.add(name)
-            try {
-              eng.setButton(name, true)
-            } catch {
-              /* ignore */
-            }
+        next.forEach((code) => {
+          if (!padDown.has(code)) {
+            const [player, name] = code.split(':')
+            padDown.add(code)
+            try { eng.setButton(name, true, Number(player)) } catch { /* ignore */ }
           }
         })
-        padDown.forEach((name) => {
-          if (!next.has(name)) {
-            padDown.delete(name)
-            try {
-              eng.setButton(name, false)
-            } catch {
-              /* ignore */
-            }
+        padDown.forEach((code) => {
+          if (!next.has(code)) {
+            const [player, name] = code.split(':')
+            padDown.delete(code)
+            try { eng.setButton(name, false, Number(player)) } catch { /* ignore */ }
           }
         })
       }, 16)
@@ -1597,6 +1620,9 @@ window.__ModuleLoader__.load({
         padTimer = null
       }
       releasePad()
+      if (state.gamepadConnected || state.gamepadNeedsMapping) {
+        setState({ gamepadConnected: false, gamepadNeedsMapping: false })
+      }
     }
 
     /* 虚拟按键（触屏）：按下/松开，带 pointer capture，不依赖键盘 */
@@ -2259,13 +2285,49 @@ window.__ModuleLoader__.load({
       const game = props.game
       const record = props.progress
       const [menuOpen, setMenuOpen] = React.useState(false)
+      const [savedSlots, setSavedSlots] = React.useState(null)
+      const [menuPosition, setMenuPosition] = React.useState(null)
+      const cardRef = React.useRef(null)
       const canUninstall = !game.builtin
       const confirming = props.confirmId === game.id
       const busy = props.uninstallBusy === game.id
       const lang = languageLabel(game.language)
+      const openMenu = (event, context = false) => {
+        event.preventDefault()
+        event.stopPropagation()
+        if (menuOpen && !context) { setMenuOpen(false); return }
+        setMenuPosition(context ? {
+          position: 'fixed',
+          left: Math.max(8, Math.min(event.clientX, window.innerWidth - 260)),
+          top: Math.max(8, Math.min(event.clientY, window.innerHeight - 380)),
+          right: 'auto',
+        } : null)
+        setSavedSlots(null)
+        setMenuOpen(true)
+      }
+      React.useEffect(() => {
+        if (!menuOpen) return undefined
+        let cancelled = false
+        readSaves(game.id).then((slots) => { if (!cancelled) setSavedSlots(slots || []) })
+          .catch(() => { if (!cancelled) setSavedSlots([]) })
+        const close = (event) => {
+          if (!cardRef.current || !cardRef.current.contains(event.target)) setMenuOpen(false)
+        }
+        const key = (event) => { if (event.key === 'Escape') { event.preventDefault(); setMenuOpen(false) } }
+        document.addEventListener('pointerdown', close)
+        document.addEventListener('keydown', key)
+        return () => {
+          cancelled = true
+          document.removeEventListener('pointerdown', close)
+          document.removeEventListener('keydown', key)
+        }
+      }, [menuOpen, game.id])
       return h(
         'article',
-        { className: cx('gb-card', menuOpen && 'is-menu-open'), 'data-gb-card': game.id },
+        {
+          ref: cardRef, className: cx('gb-card', menuOpen && 'is-menu-open'), 'data-gb-card': game.id,
+          onContextMenu: (event) => openMenu(event, true),
+        },
         h(
           'button',
           {
@@ -2306,83 +2368,41 @@ window.__ModuleLoader__.load({
             ),
           ),
         ),
-        canUninstall
-          ? h(
-              'div',
-              { className: 'gb-card-menu' },
-              h(
-                'button',
-                {
-                  type: 'button',
-                  className: 'gb-icon-btn gb-card-menu-btn',
-                  'data-gb-menu': game.id,
-                  'aria-label': t('action.more'),
-                  'aria-expanded': menuOpen,
-                  onClick: (event) => {
-                    event.stopPropagation()
-                    setMenuOpen(!menuOpen)
-                    if (confirming) setState({ uninstallConfirm: '' })
-                  },
-                },
-                h(Icon, { name: 'more', size: 16 }),
+        h('div', { className: 'gb-card-menu' },
+          h('button', {
+            type: 'button', className: 'gb-icon-btn gb-card-menu-btn', 'data-gb-menu': game.id,
+            'aria-label': t('action.more'), 'aria-expanded': menuOpen,
+            onClick: (event) => openMenu(event),
+          }, h(Icon, { name: 'more', size: 16 })),
+          menuOpen ? h('div', {
+            className: 'gb-menu gb-launch-menu', role: 'menu', style: menuPosition,
+            'data-gb-launch-menu': game.id,
+          },
+            h('button', {
+              type: 'button', className: 'gb-menu-item', role: 'menuitem', 'data-gb-restart': game.id,
+              onClick: () => { setMenuOpen(false); playGame(game) },
+            }, h(Icon, { name: 'play', size: 14 }), t('library.restart')),
+            h('p', { className: 'gb-menu-note' }, t('library.fromSave')),
+            savedSlots === null ? h('p', { className: 'gb-menu-note' }, t('action.loading'))
+              : savedSlots.length === 0 ? h('p', { className: 'gb-menu-note', 'data-gb-no-saves': '' }, t('library.noSaves'))
+              : savedSlots.slice().sort((a, b) => num(b.updatedAt, 0) - num(a.updatedAt, 0)).map((saved) =>
+                h('button', {
+                  key: saved.slot, type: 'button', role: 'menuitem', className: 'gb-menu-item gb-resume-item',
+                  'data-gb-resume-slot': saved.slot,
+                  onClick: () => { setMenuOpen(false); playGame(game, saved.slot) },
+                }, h('span', null, slotText(saved.slot)), h('small', null, timeText(saved.updatedAt))),
               ),
-              menuOpen
-                ? h(
-                    'div',
-                    { className: 'gb-menu', role: 'menu' },
-                    confirming
-                      ? h(
-                          'div',
-                          { className: 'gb-menu-confirm', 'data-gb-uninstall-confirm': game.id },
-                          h('p', null, t('library.deleteAsk', { title: text(game.title) })),
-                          h(
-                            'div',
-                            { className: 'gb-menu-confirm-actions' },
-                            h(
-                              'button',
-                              {
-                                type: 'button',
-                                className: 'gb-btn gb-btn-sm',
-                                onClick: () => {
-                                  setState({ uninstallConfirm: '' })
-                                  setMenuOpen(false)
-                                },
-                              },
-                              t('action.cancel'),
-                            ),
-                            h(
-                              'button',
-                              {
-                                type: 'button',
-                                className: 'gb-btn gb-btn-sm is-danger',
-                                'data-gb-uninstall': game.id,
-                                disabled: busy,
-                                onClick: () => {
-                                  uninstallGame(game.id)
-                                  setMenuOpen(false)
-                                },
-                              },
-                              busy ? h(Spinner, { size: 12 }) : null,
-                              busy ? t('action.deleting') : t('action.delete'),
-                            ),
-                          ),
-                          h('p', { className: 'gb-menu-note' }, t('library.deleteNote')),
-                        )
-                      : h(
-                          'button',
-                          {
-                            type: 'button',
-                            className: 'gb-menu-item is-danger',
-                            role: 'menuitem',
-                            onClick: () => setState({ uninstallConfirm: game.id }),
-                          },
-                          h(Icon, { name: 'trash', size: 14 }),
-                          t('action.delete'),
-                        ),
-                  )
-                : null,
-            )
-          : null,
+            canUninstall ? h('button', {
+              type: 'button', className: 'gb-menu-item is-danger', role: 'menuitem',
+              'data-gb-uninstall': confirming ? game.id : undefined,
+              'data-gb-uninstall-confirm': confirming ? game.id : undefined, disabled: busy,
+              onClick: () => {
+                if (confirming) { uninstallGame(game.id); setMenuOpen(false) }
+                else setState({ uninstallConfirm: game.id })
+              },
+            }, h(Icon, { name: 'trash', size: 14 }), confirming ? t('library.confirmDelete') : t('action.delete')) : null,
+          ) : null,
+        ),
       )
     }
 
@@ -2977,6 +2997,29 @@ window.__ModuleLoader__.load({
       return translate(map[text(code)] || 'auth.none')
     }
 
+    function ControllerSettings() {
+      const t = useT()
+      const [Component, setComponent] = React.useState(null)
+      const [error, setError] = React.useState('')
+      const locale = t('action.play') === 'Play' ? 'en' : 'zh'
+      React.useEffect(() => {
+        let disposed = false
+        loadPadModules().then(() => {
+          if (disposed) return
+          const component = window.GameBenchGamepadSettings.create(React, {
+            locale,
+            getProfiles: () => state.ui.padProfiles,
+            saveProfiles: (padProfiles) => patchUi({ padProfiles }),
+            getPaired: () => state.ui.padPaired,
+            setPaired: (padPaired) => patchUi({ padPaired }),
+          })
+          setComponent(() => component)
+        }).catch((reason) => { if (!disposed) setError(errMessage(reason)) })
+        return () => { disposed = true }
+      }, [locale])
+      return Component ? h(Component) : h('p', { className: 'gb-field-hint' }, error || t('action.loading'))
+    }
+
     function SettingsView(props) {
       const t = useT()
       const s = props.state
@@ -3023,6 +3066,7 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         { className: 'gb-view gb-settings', 'data-gb-status': 'settings' },
+        h(ControllerSettings),
         h(
           'section',
           { className: 'gb-panel' },
@@ -3405,6 +3449,7 @@ window.__ModuleLoader__.load({
       const canvasRef = React.useRef(null)
       const stageRef = React.useRef(null)
       const screenRef = React.useRef(null)
+      const playerRef = React.useRef(null)
       const [screen, setScreen] = React.useState({ w: 512, h: 384 })
       const [controlsHidden, setControlsHidden] = React.useState(false)
 
@@ -3426,12 +3471,25 @@ window.__ModuleLoader__.load({
           /* 全屏时不留边距；窗口内按短边 3% 留白（至少 12px），小窗口不会浪费空间 */
           const inFullscreen = !!document.fullscreenElement
           const pad = inFullscreen ? 0 : Math.max(12, Math.round(Math.min(rawW, rawH) * 0.03))
+          const pixelRatio = Number(window.devicePixelRatio) || 1
           const next = screenSizeFor(
             s.ui.screenMode,
             Math.max(1, rawW - pad * 2),
             Math.max(1, rawH - pad * 2),
+            pixelRatio,
           )
-          setScreen((previous) => (previous.w === next.w && previous.h === next.h ? previous : next))
+          const snap = (value) => Math.round(value * pixelRatio) / pixelRatio
+          const bounds = stage.getBoundingClientRect ? stage.getBoundingClientRect() : { left: 0, top: 0 }
+          const idealLeft = num(bounds.left, 0) + (rawW - next.w) / 2
+          const idealTop = num(bounds.top, 0) + (rawH - next.h) / 2
+          const dx = snap(idealLeft) - idealLeft
+          const dy = snap(idealTop) - idealTop
+          const measured = Object.assign({}, next, { dx, dy })
+          setScreen((previous) => (
+            previous.w === measured.w && previous.h === measured.h && previous.dx === measured.dx && previous.dy === measured.dy
+              ? previous
+              : measured
+          ))
         }
         measure()
         let observer = null
@@ -3452,40 +3510,60 @@ window.__ModuleLoader__.load({
         }
       }, [game && game.id, s.fullscreen, s.ui.screenMode])
 
-      /* 全屏时控制条自动隐藏：2.5s 无操作淡出，移动/按键/触摸再现 */
+      /* 窗口/全屏均自动收起。游戏按键不唤起工具栏，靠近上下边缘或触摸画面才显示。 */
       React.useEffect(() => {
-        if (!s.fullscreen) {
-          setControlsHidden(false)
-          return undefined
-        }
+        const player = playerRef.current
+        setControlsHidden(false)
+        if (!player || s.playerPhase !== 'ready' || !s.audioReady || s.engineState.paused || s.savePanel) return undefined
         let timer = null
-        let hidden = false
-        const reveal = () => {
-          if (hidden) {
-            hidden = false
-            setControlsHidden(false)
-          }
-          if (timer) clearTimeout(timer)
+        const arm = () => {
+          clearTimeout(timer)
           timer = setTimeout(() => {
-            hidden = true
+            const focused = player.querySelector('.gb-player-bar :focus-visible, .gb-player-top :focus-visible')
+            if (focused || player.querySelector('.gb-player-bar:hover, .gb-player-top:hover')) {
+              arm()
+              return
+            }
             setControlsHidden(true)
           }, 2500)
         }
-        reveal()
-        const events = ['mousemove', 'pointerdown', 'keydown', 'wheel', 'touchstart']
-        events.forEach((name) => window.addEventListener(name, reveal, { passive: true }))
-        return () => {
-          if (timer) clearTimeout(timer)
-          events.forEach((name) => window.removeEventListener(name, reveal))
+        const reveal = () => {
+          setControlsHidden(false)
+          arm()
         }
-      }, [s.fullscreen])
+        const pointerMove = (event) => {
+          const rect = player.getBoundingClientRect()
+          if (event.clientY >= rect.bottom - 100 || event.clientY <= rect.top + 48) reveal()
+        }
+        const pointerDown = (event) => {
+          if (event.pointerType === 'touch') reveal()
+        }
+        const focusIn = () => reveal()
+        const onKey = (event) => { if (event.key === 'Tab') reveal() }
+        arm()
+        player.addEventListener('pointermove', pointerMove, { passive: true })
+        player.addEventListener('pointerdown', pointerDown, { passive: true })
+        player.addEventListener('focusin', focusIn)
+        player.addEventListener('keydown', onKey)
+        return () => {
+          clearTimeout(timer)
+          player.removeEventListener('pointermove', pointerMove)
+          player.removeEventListener('pointerdown', pointerDown)
+          player.removeEventListener('focusin', focusIn)
+          player.removeEventListener('keydown', onKey)
+        }
+      }, [s.fullscreen, s.playerPhase, s.audioReady, s.engineState.paused, s.savePanel, game && game.id])
 
       if (!game) return null
 
       const phase = s.playerPhase
       const paused = !!s.engineState.paused
       const audioBlocked = s.engineState.audio === 'blocked' && s.audioReady
-      const screenStyle = { width: screen.w + 'px', height: screen.h + 'px' }
+      const screenStyle = {
+        width: screen.w + 'px',
+        height: screen.h + 'px',
+        transform: `translate(${num(screen.dx, 0)}px, ${num(screen.dy, 0)}px)`,
+      }
 
       const screenChildren = [
         h('canvas', {
@@ -3576,8 +3654,10 @@ window.__ModuleLoader__.load({
       return h(
         'section',
         {
-          className: cx('gb-player', s.ui.crt && 'is-crt', controlsHidden && 'is-controls-hidden'),
+          ref: playerRef,
+          className: cx('gb-player', s.ui.crt && 'is-crt', s.touchMode && 'is-touch', controlsHidden && 'is-controls-hidden'),
           'data-gb-player': '',
+          'data-gb-controls': controlsHidden ? 'hidden' : 'visible',
           'data-gb-phase': phase,
           'data-gb-status':
             phase === 'error'
@@ -3619,7 +3699,7 @@ window.__ModuleLoader__.load({
             audioBlocked
               ? h('span', { className: 'gb-chip gb-chip-warn', 'data-gb-audio-blocked': '' }, h(Icon, { name: 'mute', size: 12 }), t('player.audioBlockedShort'))
               : null,
-            s.gamepadConnected ? h('span', { className: 'gb-chip gb-chip-quiet' }, h(Icon, { name: 'keys', size: 12 }), t('player.gamepad')) : null,
+            s.gamepadConnected ? h('span', { className: 'gb-chip gb-chip-quiet' }, h(Icon, { name: 'keys', size: 12 }), t(s.gamepadNeedsMapping ? 'player.gamepadNeedsMapping' : 'player.gamepad')) : null,
             h(
               'button',
               {
@@ -4045,6 +4125,10 @@ window.__ModuleLoader__.load({
     @media (min-width:900px){.gb-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
     @media (min-width:1100px){.gb-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
     .gb-card{position:relative;min-width:0}
+    .gb-card.is-menu-open{z-index:30}
+    .gb-launch-menu{max-height:min(380px,80vh);overflow-y:auto}
+    .gb-resume-item{flex-direction:column;align-items:flex-start;gap:2px}
+    .gb-resume-item small{font-size:10px;font-weight:400;color:var(--gb-t2)}
     .gb-card-hit{display:block;width:100%;padding:0;border:0;background:none;text-align:left;border-radius:var(--gb-r-md)}
     .gb-card-cover{
       position:relative;display:block;aspect-ratio:4/5;border-radius:var(--gb-r-md);overflow:hidden;
@@ -4481,6 +4565,17 @@ window.__ModuleLoader__.load({
     .gb-touch-btn.face.b{background:rgba(245,183,49,.24);border-color:rgba(245,183,49,.5);color:#ffe0a0}
     .gb-touch-btn.face.a{background:rgba(37,99,235,.3);border-color:rgba(96,165,250,.55);color:#ffd2d4}
 
+    /* 桌面窗口内也使用浮动工具栏，收起后游戏可利用整块舞台，画面不会来回跳动。 */
+    .gb-player:not(.is-touch) .gb-player-bar{
+      position:absolute;left:12px;right:12px;bottom:12px;z-index:20;margin:0;
+      background:rgba(10,8,12,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    }
+    .gb-player:not(.is-touch) .gb-keyhints{
+      position:absolute;left:12px;right:12px;bottom:70px;z-index:19;
+      padding:6px 10px;background:rgba(10,8,12,.72);border-radius:8px;
+    }
+    .gb-player.is-touch.is-controls-hidden .gb-player-bar,
+    .gb-player.is-touch.is-controls-hidden .gb-keyhints{position:absolute;bottom:0;left:0;right:0}
     .gb-player-top,.gb-player-bar,.gb-keyhints{transition:opacity 220ms ease}
     .gb-player.is-controls-hidden{cursor:none}
     .gb-player.is-controls-hidden .gb-player-top,
@@ -4683,6 +4778,7 @@ window.__ModuleLoader__.load({
       'player.mediaPaused': '检测到其它播放器在响，游戏先暂停了',
       'player.audioBlockedShort': '声音被浏览器拦住了，点一下画面',
       'player.gamepad': '手柄已连接',
+      'player.gamepadNeedsMapping': '手柄需校准 · 前往设置',
       'player.fullscreen': '全屏',
       'player.exitFullscreen': '退出全屏',
       'player.crt': 'CRT 滤镜',
@@ -4692,7 +4788,7 @@ window.__ModuleLoader__.load({
       'player.screenModeChanged': '画面比例：{mode}',
       'player.screen.fit': '4:3 比例',
       'player.screen.stretch': '铺满',
-      'player.screen.pixel': '像素',
+      'player.screen.pixel': '原始像素',
       'player.volume': '音量',
       'player.mute': '静音',
       'player.unmute': '取消静音',
@@ -4742,6 +4838,10 @@ window.__ModuleLoader__.load({
       'settings.repoInvalid': '仓库名要写成 owner/name',
       'settings.section.play': '游玩偏好',
       'settings.volume': '默认音量',
+      'library.restart': '重新开始',
+      'library.fromSave': '从存档开始',
+      'library.noSaves': '还没有存档',
+      'library.confirmDelete': '确认删除（保留存档）',
       'settings.keys': '按键方案',
       'settings.keys.default': '默认 Z=B / X=A',
       'settings.keys.arcade': '街机 Z=A / X=B',
@@ -4749,7 +4849,7 @@ window.__ModuleLoader__.load({
       'settings.crt': 'CRT 滤镜',
       'settings.fps': '显示帧率',
       'settings.screen': '画面比例',
-      'settings.screenHint': '默认 4:3 接近当年的电视；「铺满」会拉伸画面，「像素」保持整数倍清晰。CRT 滤镜是另一项，可单独开关。',
+      'settings.screenHint': '默认「原始像素」按屏幕物理像素整数倍显示；4:3 接近当年的电视比例，「铺满」会拉伸画面。CRT 滤镜可单独开关。',
       'settings.section.data': '数据与状态',
       'settings.dataDir': '数据目录',
       'settings.auth': '市场鉴权',
@@ -4884,6 +4984,7 @@ window.__ModuleLoader__.load({
       'player.mediaPaused': 'Another player started, so the game paused',
       'player.audioBlockedShort': 'Audio blocked by the browser, click the screen',
       'player.gamepad': 'Gamepad connected',
+      'player.gamepadNeedsMapping': 'Controller needs mapping · Settings',
       'player.fullscreen': 'Fullscreen',
       'player.exitFullscreen': 'Exit fullscreen',
       'player.crt': 'CRT filter',
@@ -4893,7 +4994,7 @@ window.__ModuleLoader__.load({
       'player.screenModeChanged': 'Screen mode: {mode}',
       'player.screen.fit': '4:3',
       'player.screen.stretch': 'Fill',
-      'player.screen.pixel': 'Pixel',
+      'player.screen.pixel': 'Original pixels',
       'player.volume': 'Volume',
       'player.mute': 'Mute',
       'player.unmute': 'Unmute',
@@ -4943,6 +5044,10 @@ window.__ModuleLoader__.load({
       'settings.repoInvalid': 'Repository must be owner/name',
       'settings.section.play': 'Playback',
       'settings.volume': 'Default volume',
+      'library.restart': 'Start over',
+      'library.fromSave': 'Start from a save',
+      'library.noSaves': 'No saves yet',
+      'library.confirmDelete': 'Confirm delete (keep saves)',
       'settings.keys': 'Button layout',
       'settings.keys.default': 'Default · Z=B / X=A',
       'settings.keys.arcade': 'Arcade · Z=A / X=B',
@@ -4950,7 +5055,7 @@ window.__ModuleLoader__.load({
       'settings.crt': 'CRT filter',
       'settings.fps': 'Show FPS',
       'settings.screen': 'Screen mode',
-      'settings.screenHint': '4:3 matches the old TV look; Fill stretches to the window; Pixel keeps crisp integer scaling. The CRT filter is a separate toggle.',
+      'settings.screenHint': 'Original pixels is the default and uses whole physical-pixel scaling; 4:3 matches the old TV shape, while Fill stretches to the window. The CRT filter is separate.',
       'settings.section.data': 'Data and status',
       'settings.dataDir': 'Data directory',
       'settings.auth': 'Market auth',

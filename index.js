@@ -62,7 +62,7 @@ export function apply(ctx) {
           log('路由注册失败（已跳过）', entry.path, String(err?.message ?? err).slice(0, 120))
         }
       }
-      log('激活', `v1.0.0`, `内置 ${builtin.count()} 款`, `数据目录 ${dataDir()}`)
+      log('激活', `v1.1.0`, `内置 ${builtin.count()} 款`, `数据目录 ${dataDir()}`)
       // 后台预热市场目录：不阻塞激活，失败只记日志（首次打开市场因此不用等网络）
       try {
         Promise.resolve(market.prefetch()).catch((err) => {

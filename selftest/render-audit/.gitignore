@@ -1,0 +1,4 @@
+# 审计运行产物（截图/raw/临时 profile），按 README 复跑生成
+out/
+tmp/
+node_modules/

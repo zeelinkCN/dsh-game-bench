@@ -1,0 +1,594 @@
+[
+  {
+    "title": "超级玛丽1",
+    "slot": "nes-ec299b9-超级玛丽1",
+    "framesCompared": 1000,
+    "equalFrames": 732,
+    "equalPercent": 73.2,
+    "bestOffset": 0,
+    "matchedNearbyPercent": 75.8,
+    "alignment": [
+      {
+        "offset": -4,
+        "equal": 338,
+        "compared": 996,
+        "percent": 33.936
+      },
+      {
+        "offset": -3,
+        "equal": 358,
+        "compared": 997,
+        "percent": 35.908
+      },
+      {
+        "offset": -2,
+        "equal": 381,
+        "compared": 998,
+        "percent": 38.176
+      },
+      {
+        "offset": -1,
+        "equal": 432,
+        "compared": 999,
+        "percent": 43.243
+      },
+      {
+        "offset": 0,
+        "equal": 732,
+        "compared": 1000,
+        "percent": 73.2
+      },
+      {
+        "offset": 1,
+        "equal": 439,
+        "compared": 999,
+        "percent": 43.944
+      },
+      {
+        "offset": 2,
+        "equal": 389,
+        "compared": 998,
+        "percent": 38.978
+      },
+      {
+        "offset": 3,
+        "equal": 367,
+        "compared": 997,
+        "percent": 36.81
+      },
+      {
+        "offset": 4,
+        "equal": 347,
+        "compared": 996,
+        "percent": 34.839
+      }
+    ],
+    "puts": 1000,
+    "canvas": {
+      "width": 256,
+      "height": 240
+    },
+    "putOrigin": {
+      "dx": 0,
+      "dy": 0
+    }
+  },
+  {
+    "title": "魂斗罗 (简)",
+    "slot": "nes-69084b4-魂斗罗_简_",
+    "framesCompared": 999,
+    "equalFrames": 810,
+    "equalPercent": 81.081,
+    "bestOffset": 1,
+    "matchedNearbyPercent": 100,
+    "alignment": [
+      {
+        "offset": -4,
+        "equal": 256,
+        "compared": 996,
+        "percent": 25.703
+      },
+      {
+        "offset": -3,
+        "equal": 368,
+        "compared": 997,
+        "percent": 36.911
+      },
+      {
+        "offset": -2,
+        "equal": 467,
+        "compared": 998,
+        "percent": 46.794
+      },
+      {
+        "offset": -1,
+        "equal": 520,
+        "compared": 999,
+        "percent": 52.052
+      },
+      {
+        "offset": 0,
+        "equal": 735,
+        "compared": 1000,
+        "percent": 73.5
+      },
+      {
+        "offset": 1,
+        "equal": 810,
+        "compared": 999,
+        "percent": 81.081
+      },
+      {
+        "offset": 2,
+        "equal": 464,
+        "compared": 998,
+        "percent": 46.493
+      },
+      {
+        "offset": 3,
+        "equal": 399,
+        "compared": 997,
+        "percent": 40.02
+      },
+      {
+        "offset": 4,
+        "equal": 366,
+        "compared": 996,
+        "percent": 36.747
+      }
+    ],
+    "puts": 1000,
+    "canvas": {
+      "width": 256,
+      "height": 240
+    },
+    "putOrigin": {
+      "dx": 0,
+      "dy": 0
+    }
+  },
+  {
+    "title": "赤色要塞",
+    "slot": "nes-701f4d4-赤色要塞",
+    "framesCompared": 1000,
+    "equalFrames": 781,
+    "equalPercent": 78.1,
+    "bestOffset": 0,
+    "matchedNearbyPercent": 99.8,
+    "alignment": [
+      {
+        "offset": -4,
+        "equal": 312,
+        "compared": 996,
+        "percent": 31.325
+      },
+      {
+        "offset": -3,
+        "equal": 344,
+        "compared": 997,
+        "percent": 34.504
+      },
+      {
+        "offset": -2,
+        "equal": 386,
+        "compared": 998,
+        "percent": 38.677
+      },
+      {
+        "offset": -1,
+        "equal": 435,
+        "compared": 999,
+        "percent": 43.544
+      },
+      {
+        "offset": 0,
+        "equal": 781,
+        "compared": 1000,
+        "percent": 78.1
+      },
+      {
+        "offset": 1,
+        "equal": 665,
+        "compared": 999,
+        "percent": 66.567
+      },
+      {
+        "offset": 2,
+        "equal": 410,
+        "compared": 998,
+        "percent": 41.082
+      },
+      {
+        "offset": 3,
+        "equal": 368,
+        "compared": 997,
+        "percent": 36.911
+      },
+      {
+        "offset": 4,
+        "equal": 333,
+        "compared": 996,
+        "percent": 33.434
+      }
+    ],
+    "puts": 1000,
+    "canvas": {
+      "width": 256,
+      "height": 240
+    },
+    "putOrigin": {
+      "dx": 0,
+      "dy": 0
+    }
+  },
+  {
+    "title": "雪人兄弟 (简)",
+    "slot": "nes-1a4d476-雪人兄弟_简_",
+    "framesCompared": 1000,
+    "equalFrames": 1000,
+    "equalPercent": 100,
+    "bestOffset": 0,
+    "matchedNearbyPercent": 100,
+    "alignment": [
+      {
+        "offset": -4,
+        "equal": 985,
+        "compared": 996,
+        "percent": 98.896
+      },
+      {
+        "offset": -3,
+        "equal": 987,
+        "compared": 997,
+        "percent": 98.997
+      },
+      {
+        "offset": -2,
+        "equal": 989,
+        "compared": 998,
+        "percent": 99.098
+      },
+      {
+        "offset": -1,
+        "equal": 992,
+        "compared": 999,
+        "percent": 99.299
+      },
+      {
+        "offset": 0,
+        "equal": 1000,
+        "compared": 1000,
+        "percent": 100
+      },
+      {
+        "offset": 1,
+        "equal": 992,
+        "compared": 999,
+        "percent": 99.299
+      },
+      {
+        "offset": 2,
+        "equal": 989,
+        "compared": 998,
+        "percent": 99.098
+      },
+      {
+        "offset": 3,
+        "equal": 987,
+        "compared": 997,
+        "percent": 98.997
+      },
+      {
+        "offset": 4,
+        "equal": 985,
+        "compared": 996,
+        "percent": 98.896
+      }
+    ],
+    "puts": 1000,
+    "canvas": {
+      "width": 256,
+      "height": 240
+    },
+    "putOrigin": {
+      "dx": 0,
+      "dy": 0
+    }
+  },
+  {
+    "title": "坦克大战 (简)",
+    "slot": "nes-8c556ef-坦克大战_简_",
+    "framesCompared": 1000,
+    "equalFrames": 985,
+    "equalPercent": 98.5,
+    "bestOffset": 0,
+    "matchedNearbyPercent": 99.9,
+    "alignment": [
+      {
+        "offset": -4,
+        "equal": 755,
+        "compared": 996,
+        "percent": 75.803
+      },
+      {
+        "offset": -3,
+        "equal": 777,
+        "compared": 997,
+        "percent": 77.934
+      },
+      {
+        "offset": -2,
+        "equal": 826,
+        "compared": 998,
+        "percent": 82.766
+      },
+      {
+        "offset": -1,
+        "equal": 878,
+        "compared": 999,
+        "percent": 87.888
+      },
+      {
+        "offset": 0,
+        "equal": 985,
+        "compared": 1000,
+        "percent": 98.5
+      },
+      {
+        "offset": 1,
+        "equal": 906,
+        "compared": 999,
+        "percent": 90.691
+      },
+      {
+        "offset": 2,
+        "equal": 854,
+        "compared": 998,
+        "percent": 85.571
+      },
+      {
+        "offset": 3,
+        "equal": 804,
+        "compared": 997,
+        "percent": 80.642
+      },
+      {
+        "offset": 4,
+        "equal": 755,
+        "compared": 996,
+        "percent": 75.803
+      }
+    ],
+    "puts": 1000,
+    "canvas": {
+      "width": 256,
+      "height": 240
+    },
+    "putOrigin": {
+      "dx": 0,
+      "dy": 0
+    }
+  },
+  {
+    "title": "松鼠大作战 (简)",
+    "slot": "nes-b903a97-松鼠大作战_简_",
+    "framesCompared": 1000,
+    "equalFrames": 999,
+    "equalPercent": 99.9,
+    "bestOffset": 0,
+    "matchedNearbyPercent": 100,
+    "alignment": [
+      {
+        "offset": -4,
+        "equal": 508,
+        "compared": 996,
+        "percent": 51.004
+      },
+      {
+        "offset": -3,
+        "equal": 547,
+        "compared": 997,
+        "percent": 54.865
+      },
+      {
+        "offset": -2,
+        "equal": 694,
+        "compared": 998,
+        "percent": 69.539
+      },
+      {
+        "offset": -1,
+        "equal": 843,
+        "compared": 999,
+        "percent": 84.384
+      },
+      {
+        "offset": 0,
+        "equal": 999,
+        "compared": 1000,
+        "percent": 99.9
+      },
+      {
+        "offset": 1,
+        "equal": 845,
+        "compared": 999,
+        "percent": 84.585
+      },
+      {
+        "offset": 2,
+        "equal": 696,
+        "compared": 998,
+        "percent": 69.739
+      },
+      {
+        "offset": 3,
+        "equal": 549,
+        "compared": 997,
+        "percent": 55.065
+      },
+      {
+        "offset": 4,
+        "equal": 510,
+        "compared": 996,
+        "percent": 51.205
+      }
+    ],
+    "puts": 1000,
+    "canvas": {
+      "width": 256,
+      "height": 240
+    },
+    "putOrigin": {
+      "dx": 0,
+      "dy": 0
+    }
+  },
+  {
+    "title": "双截龙2 - 复仇 (简)",
+    "slot": "nes-02ade1c-双截龙2_-_复仇_简_",
+    "framesCompared": 1000,
+    "equalFrames": 962,
+    "equalPercent": 96.2,
+    "bestOffset": 0,
+    "matchedNearbyPercent": 99.9,
+    "alignment": [
+      {
+        "offset": -4,
+        "equal": 733,
+        "compared": 996,
+        "percent": 73.594
+      },
+      {
+        "offset": -3,
+        "equal": 785,
+        "compared": 997,
+        "percent": 78.736
+      },
+      {
+        "offset": -2,
+        "equal": 857,
+        "compared": 998,
+        "percent": 85.872
+      },
+      {
+        "offset": -1,
+        "equal": 934,
+        "compared": 999,
+        "percent": 93.493
+      },
+      {
+        "offset": 0,
+        "equal": 962,
+        "compared": 1000,
+        "percent": 96.2
+      },
+      {
+        "offset": 1,
+        "equal": 908,
+        "compared": 999,
+        "percent": 90.891
+      },
+      {
+        "offset": 2,
+        "equal": 831,
+        "compared": 998,
+        "percent": 83.267
+      },
+      {
+        "offset": 3,
+        "equal": 759,
+        "compared": 997,
+        "percent": 76.128
+      },
+      {
+        "offset": 4,
+        "equal": 687,
+        "compared": 996,
+        "percent": 68.976
+      }
+    ],
+    "puts": 1000,
+    "canvas": {
+      "width": 256,
+      "height": 240
+    },
+    "putOrigin": {
+      "dx": 0,
+      "dy": 0
+    }
+  },
+  {
+    "title": "星光试航 Star Pilot",
+    "slot": "starpilot-星光试航_Star_Pilot",
+    "framesCompared": 1000,
+    "equalFrames": 998,
+    "equalPercent": 99.8,
+    "bestOffset": 0,
+    "matchedNearbyPercent": 100,
+    "alignment": [
+      {
+        "offset": -4,
+        "equal": 833,
+        "compared": 996,
+        "percent": 83.635
+      },
+      {
+        "offset": -3,
+        "equal": 835,
+        "compared": 997,
+        "percent": 83.751
+      },
+      {
+        "offset": -2,
+        "equal": 837,
+        "compared": 998,
+        "percent": 83.868
+      },
+      {
+        "offset": -1,
+        "equal": 839,
+        "compared": 999,
+        "percent": 83.984
+      },
+      {
+        "offset": 0,
+        "equal": 998,
+        "compared": 1000,
+        "percent": 99.8
+      },
+      {
+        "offset": 1,
+        "equal": 842,
+        "compared": 999,
+        "percent": 84.284
+      },
+      {
+        "offset": 2,
+        "equal": 838,
+        "compared": 998,
+        "percent": 83.968
+      },
+      {
+        "offset": 3,
+        "equal": 836,
+        "compared": 997,
+        "percent": 83.852
+      },
+      {
+        "offset": 4,
+        "equal": 834,
+        "compared": 996,
+        "percent": 83.735
+      }
+    ],
+    "puts": 1000,
+    "canvas": {
+      "width": 256,
+      "height": 240
+    },
+    "putOrigin": {
+      "dx": 0,
+      "dy": 0
+    }
+  }
+]

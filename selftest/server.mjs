@@ -34,6 +34,8 @@ const LIBRARY = join(WORKSPACE, '.lead-tmp', 'gb', 'library')
 const CLIENT = process.env.GB_CLIENT ? resolve(process.env.GB_CLIENT) : join(PLUGIN, 'client.js')
 const ENGINE = process.env.GB_ENGINE ? resolve(process.env.GB_ENGINE) : join(PLUGIN, 'engine.js')
 const JSNES = process.env.GB_JSNES ? resolve(process.env.GB_JSNES) : join(PLUGIN, 'vendor', 'jsnes.min.js')
+const GAMEPADS = process.env.GB_GAMEPADS ? resolve(process.env.GB_GAMEPADS) : join(PLUGIN, 'gamepads.js')
+const GAMEPAD_SETTINGS = process.env.GB_GAMEPAD_SETTINGS ? resolve(process.env.GB_GAMEPAD_SETTINGS) : join(PLUGIN, 'gamepad-settings.js')
 const GAMES = join(PLUGIN, 'games')
 
 const API = '/game-bench/api'
@@ -244,7 +246,7 @@ function statusPayload() {
   const authBlocked = cfg.mode === 'auth'
   const offline = cfg.mode === 'offline'
   return {
-    version: '1.0.0',
+    version: '1.1.0',
     builtinCount: BUILTIN.length,
     installedCount: installed.size,
     dataDir: '/tmp/game-bench-selftest-data',
@@ -260,7 +262,12 @@ function statusPayload() {
           ? '连不上 GitHub，请检查网络后重试（内置游戏不受影响）'
           : null,
     },
-    vendor: { jsnes: existsSync(JSNES), engine: existsSync(ENGINE) },
+    vendor: {
+      jsnes: existsSync(JSNES),
+      engine: existsSync(ENGINE),
+      gamepads: existsSync(GAMEPADS),
+      gamepadSettings: existsSync(GAMEPAD_SETTINGS),
+    },
   }
 }
 
@@ -320,6 +327,16 @@ async function handleApi(req, res, path, params) {
   if (path === `${API}/engine.js`) {
     const served = staticFile(res, ENGINE, 'application/javascript; charset=utf-8', 'public, max-age=604800')
     if (!served) fail(res, 'NOT_FOUND', '缺少模拟器封装 engine.js', 404)
+    return
+  }
+  if (path === `${API}/gamepads.js`) {
+    const served = staticFile(res, GAMEPADS, 'application/javascript; charset=utf-8', 'public, max-age=604800')
+    if (!served) fail(res, 'NOT_FOUND', '缺少手柄模块 gamepads.js', 404)
+    return
+  }
+  if (path === `${API}/gamepad-settings.js`) {
+    const served = staticFile(res, GAMEPAD_SETTINGS, 'application/javascript; charset=utf-8', 'public, max-age=604800')
+    if (!served) fail(res, 'NOT_FOUND', '缺少手柄设置模块 gamepad-settings.js', 404)
     return
   }
 
@@ -506,6 +523,7 @@ const server = createServer(async (req, res) => {
     if (path === '/__artifacts') {
       return json(res, 200, {
         client: existsSync(CLIENT), engine: existsSync(ENGINE), jsnes: existsSync(JSNES),
+        gamepads: existsSync(GAMEPADS), gamepadSettings: existsSync(GAMEPAD_SETTINGS),
         games: existsSync(GAMES), library: existsSync(LIBRARY),
         builtin: BUILTIN.length, market: MARKET_SLICE.length, collections: COLLECTIONS.length,
       })
@@ -548,6 +566,8 @@ server.listen(0, '127.0.0.1', () => {
     client: CLIENT,
     engine: existsSync(ENGINE),
     jsnes: existsSync(JSNES),
+    gamepads: existsSync(GAMEPADS),
+    gamepadSettings: existsSync(GAMEPAD_SETTINGS),
     builtin: BUILTIN.length,
     market: MARKET_SLICE.length,
     collections: COLLECTIONS.map((c) => `${c.id}:${c.ids.length}`).join(','),

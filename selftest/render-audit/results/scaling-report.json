@@ -1,0 +1,414 @@
+{
+  "native": [
+    256,
+    240
+  ],
+  "cases": [
+    {
+      "label": "fit av=1100x700 dpr=1",
+      "css": [
+        933,
+        700
+      ],
+      "dpr": 1,
+      "device": [
+        933,
+        700
+      ],
+      "scaleX": 3.6445,
+      "scaleY": 2.9167,
+      "scaleX_integer": false,
+      "scaleY_integer": false,
+      "horizontal_stretch_vs_square": 1.2496,
+      "column_width_values": [
+        3,
+        4
+      ],
+      "column_width_counts": {
+        "3": 91,
+        "4": 165
+      },
+      "tile_width_values": [
+        29,
+        30
+      ],
+      "tile_width_counts": {
+        "29": 27,
+        "30": 5
+      },
+      "tile_boundary_drift_px": [
+        -0.156,
+        -0.312,
+        -0.469,
+        0.375,
+        0.219,
+        0.062,
+        -0.094,
+        -0.25,
+        -0.406,
+        0.438,
+        0.281,
+        0.125,
+        -0.031,
+        -0.188,
+        -0.344,
+        -0.5,
+        0.344,
+        0.188,
+        0.031,
+        -0.125,
+        -0.281,
+        -0.438,
+        0.406,
+        0.25,
+        0.094,
+        -0.062,
+        -0.219,
+        -0.375,
+        0.469,
+        0.312,
+        0.156,
+        0.0
+      ],
+      "tile_boundary_drift_max": 0.5
+    },
+    {
+      "label": "fit av=1100x700 dpr=2",
+      "css": [
+        933,
+        700
+      ],
+      "dpr": 2,
+      "device": [
+        1866,
+        1400
+      ],
+      "scaleX": 7.2891,
+      "scaleY": 5.8333,
+      "scaleX_integer": false,
+      "scaleY_integer": false,
+      "horizontal_stretch_vs_square": 1.2496,
+      "column_width_values": [
+        7,
+        8
+      ],
+      "column_width_counts": {
+        "7": 182,
+        "8": 74
+      },
+      "tile_width_values": [
+        58,
+        59
+      ],
+      "tile_width_counts": {
+        "58": 22,
+        "59": 10
+      },
+      "tile_boundary_drift_px": [
+        -0.312,
+        0.375,
+        0.062,
+        -0.25,
+        0.438,
+        0.125,
+        -0.188,
+        -0.5,
+        0.188,
+        -0.125,
+        -0.438,
+        0.25,
+        -0.062,
+        -0.375,
+        0.312,
+        0.0,
+        -0.312,
+        0.375,
+        0.062,
+        -0.25,
+        0.438,
+        0.125,
+        -0.188,
+        0.5,
+        0.188,
+        -0.125,
+        -0.438,
+        0.25,
+        -0.062,
+        -0.375,
+        0.312,
+        0.0
+      ],
+      "tile_boundary_drift_max": 0.5
+    },
+    {
+      "label": "fit av=980x620 dpr=1",
+      "css": [
+        827,
+        620
+      ],
+      "dpr": 1,
+      "device": [
+        827,
+        620
+      ],
+      "scaleX": 3.2305,
+      "scaleY": 2.5833,
+      "scaleX_integer": false,
+      "scaleY_integer": false,
+      "horizontal_stretch_vs_square": 1.2505,
+      "column_width_values": [
+        3,
+        4
+      ],
+      "column_width_counts": {
+        "3": 197,
+        "4": 59
+      },
+      "tile_width_values": [
+        25,
+        26
+      ],
+      "tile_width_counts": {
+        "25": 5,
+        "26": 27
+      },
+      "tile_boundary_drift_px": [
+        0.156,
+        0.312,
+        0.469,
+        -0.375,
+        -0.219,
+        -0.062,
+        0.094,
+        0.25,
+        0.406,
+        -0.438,
+        -0.281,
+        -0.125,
+        0.031,
+        0.188,
+        0.344,
+        0.5,
+        -0.344,
+        -0.188,
+        -0.031,
+        0.125,
+        0.281,
+        0.438,
+        -0.406,
+        -0.25,
+        -0.094,
+        0.062,
+        0.219,
+        0.375,
+        -0.469,
+        -0.312,
+        -0.156,
+        0.0
+      ],
+      "tile_boundary_drift_max": 0.5
+    },
+    {
+      "label": "fit av=980x620 dpr=2",
+      "css": [
+        827,
+        620
+      ],
+      "dpr": 2,
+      "device": [
+        1654,
+        1240
+      ],
+      "scaleX": 6.4609,
+      "scaleY": 5.1667,
+      "scaleX_integer": false,
+      "scaleY_integer": false,
+      "horizontal_stretch_vs_square": 1.2505,
+      "column_width_values": [
+        6,
+        7
+      ],
+      "column_width_counts": {
+        "6": 138,
+        "7": 118
+      },
+      "tile_width_values": [
+        51,
+        52
+      ],
+      "tile_width_counts": {
+        "51": 10,
+        "52": 22
+      },
+      "tile_boundary_drift_px": [
+        0.312,
+        -0.375,
+        -0.062,
+        0.25,
+        -0.438,
+        -0.125,
+        0.188,
+        0.5,
+        -0.188,
+        0.125,
+        0.438,
+        -0.25,
+        0.062,
+        0.375,
+        -0.312,
+        0.0,
+        0.312,
+        -0.375,
+        -0.062,
+        0.25,
+        -0.438,
+        -0.125,
+        0.188,
+        -0.5,
+        -0.188,
+        0.125,
+        0.438,
+        -0.25,
+        0.062,
+        0.375,
+        -0.312,
+        0.0
+      ],
+      "tile_boundary_drift_max": 0.5
+    },
+    {
+      "label": "fit av=560x600 dpr=1",
+      "css": [
+        560,
+        420
+      ],
+      "dpr": 1,
+      "device": [
+        560,
+        420
+      ],
+      "scaleX": 2.1875,
+      "scaleY": 1.75,
+      "scaleX_integer": false,
+      "scaleY_integer": false,
+      "horizontal_stretch_vs_square": 1.25,
+      "column_width_values": [
+        2,
+        3
+      ],
+      "column_width_counts": {
+        "2": 208,
+        "3": 48
+      },
+      "tile_width_values": [
+        17,
+        18
+      ],
+      "tile_width_counts": {
+        "17": 16,
+        "18": 16
+      },
+      "tile_boundary_drift_px": [
+        0.5,
+        0.0,
+        -0.5,
+        0.0,
+        0.5,
+        0.0,
+        -0.5,
+        0.0,
+        0.5,
+        0.0,
+        -0.5,
+        0.0,
+        0.5,
+        0.0,
+        -0.5,
+        0.0,
+        0.5,
+        0.0,
+        -0.5,
+        0.0,
+        0.5,
+        0.0,
+        -0.5,
+        0.0,
+        0.5,
+        0.0,
+        -0.5,
+        0.0,
+        0.5,
+        0.0,
+        -0.5,
+        0.0
+      ],
+      "tile_boundary_drift_max": 0.5
+    },
+    {
+      "label": "fit av=560x600 dpr=2",
+      "css": [
+        560,
+        420
+      ],
+      "dpr": 2,
+      "device": [
+        1120,
+        840
+      ],
+      "scaleX": 4.375,
+      "scaleY": 3.5,
+      "scaleX_integer": false,
+      "scaleY_integer": false,
+      "horizontal_stretch_vs_square": 1.25,
+      "column_width_values": [
+        4,
+        5
+      ],
+      "column_width_counts": {
+        "4": 160,
+        "5": 96
+      },
+      "tile_width_values": [
+        35
+      ],
+      "tile_width_counts": {
+        "35": 32
+      },
+      "tile_boundary_drift_px": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "tile_boundary_drift_max": 0.0
+    }
+  ]
+}

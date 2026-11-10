@@ -325,6 +325,8 @@ try {
   for (const [name, file] of [
     ['vendor/jsnes.js', join(PLUGIN_ROOT, 'vendor', 'jsnes.min.js')],
     ['engine.js', join(PLUGIN_ROOT, 'engine.js')],
+    ['gamepads.js', join(PLUGIN_ROOT, 'gamepads.js')],
+    ['gamepad-settings.js', join(PLUGIN_ROOT, 'gamepad-settings.js')],
   ]) {
     const res = await call(api(`/${name}`))
     if (!existsSync(file)) {

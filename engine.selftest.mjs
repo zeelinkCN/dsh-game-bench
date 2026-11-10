@@ -790,8 +790,8 @@ async function main() {
   emptyEngine.destroy()
   validationEngine.destroy()
 
-  // ---- 7 款内置 ROM ----
-  check('内置游戏清单为 7 款', games.length === 7, '实际 ' + games.length)
+  // ---- 7 款经典 + 1 款原创 demo ----
+  check('内置游戏清单为 8 款（7 经典 + Star Pilot）', games.length === 8 && games.some((game) => /star.?pilot/i.test(game.title || game.id || '')), '实际 ' + games.length)
 
   const summaries = []
   for (let i = 0; i < games.length; i++) {

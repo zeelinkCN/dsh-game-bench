@@ -412,7 +412,7 @@ export function createMarket({ log = () => {}, store, builtin }) {
   async function peekStatus() {
     const cat = await peekCatalog()
     if (!cat) return { ready: false, count: 0, lastSync: null }
-    return { ready: true, count: nesGamesOf(cat.games).length, lastSync: cat.at }
+    return { ready: true, count: nesGamesOf(cat.games).length, lastSync: Math.round(cat.at) }
   }
 
   const lastError = () => state.lastError
@@ -427,7 +427,7 @@ export function createMarket({ log = () => {}, store, builtin }) {
       return {
         total: items.length,
         collections: collections.length,
-        lastSync: cat.at,
+        lastSync: Math.round(cat.at),
         auth: auth ? auth.kind : 'none',
       }
     } catch (err) {

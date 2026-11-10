@@ -17,6 +17,8 @@ import { invalidateAuth, peekAuth, resolveAuth } from './github.mjs'
 import {
   DEFAULT_REPO,
   ENGINE_FILE,
+  GAMEPADS_FILE,
+  GAMEPAD_SETTINGS_FILE,
   ID_RE,
   ROUTE,
   VENDOR_FILE,
@@ -227,6 +229,8 @@ export function createRoutes({ log, builtin, store, market }) {
       vendor: {
         jsnes: existsSync(VENDOR_FILE),
         engine: existsSync(ENGINE_FILE),
+        gamepads: existsSync(GAMEPADS_FILE),
+        gamepadSettings: existsSync(GAMEPAD_SETTINGS_FILE),
       },
     }
   }
@@ -251,7 +255,7 @@ export function createRoutes({ log, builtin, store, market }) {
         lastSync: null,
         error: '状态检查暂时不可用',
       },
-      vendor: { jsnes: false, engine: false },
+      vendor: { jsnes: false, engine: false, gamepads: false, gamepadSettings: false },
     }
   }
 
@@ -449,6 +453,8 @@ export function createRoutes({ log, builtin, store, market }) {
   /* ---- 9. 前端运行时静态文件 ---- */
   add('vendor/jsnes.js', async (url, req, res) => serveRuntimeScript(res, VENDOR_FILE, log))
   add('engine.js', async (url, req, res) => serveRuntimeScript(res, ENGINE_FILE, log))
+  add('gamepads.js', async (url, req, res) => serveRuntimeScript(res, GAMEPADS_FILE, log))
+  add('gamepad-settings.js', async (url, req, res) => serveRuntimeScript(res, GAMEPAD_SETTINGS_FILE, log))
 
   /* ---- 10. 强制同步 ---- */
   add('sync', async (url, req, res) => {

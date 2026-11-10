@@ -1,0 +1,1570 @@
+[
+  {
+    "slot": "nes-ec299b9-超级玛丽1",
+    "title": "超级玛丽1",
+    "frames": [
+      {
+        "frame": 60,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.986
+          },
+          "atZero": 0.986
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.829
+          },
+          "atZero": 0.829
+        }
+      },
+      {
+        "frame": 120,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 200,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 320,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.956
+          },
+          "atZero": 0.956
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.699
+          },
+          "atZero": 0.699
+        }
+      },
+      {
+        "frame": 400,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.891
+          },
+          "atZero": 0.891
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.544
+          },
+          "atZero": 0.544
+        }
+      },
+      {
+        "frame": 500,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.974
+          },
+          "atZero": 0.974
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.745
+          },
+          "atZero": 0.745
+        }
+      },
+      {
+        "frame": 620,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.974
+          },
+          "atZero": 0.974
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.746
+          },
+          "atZero": 0.746
+        }
+      },
+      {
+        "frame": 760,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 900,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.726
+          },
+          "atZero": 0.726
+        }
+      },
+      {
+        "frame": 990,
+        "green": {
+          "best": {
+            "dx": 4,
+            "dy": 0,
+            "iou": 0.716
+          },
+          "atZero": 0.712
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.443
+          },
+          "atZero": 0.443
+        }
+      }
+    ]
+  },
+  {
+    "slot": "nes-69084b4-魂斗罗_简_",
+    "title": "魂斗罗 (简)",
+    "frames": [
+      {
+        "frame": 60,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 120,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 200,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 320,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 400,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 500,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.874
+          },
+          "atZero": 0.874
+        }
+      },
+      {
+        "frame": 620,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.493
+          },
+          "atZero": 0.493
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.825
+          },
+          "atZero": 0.825
+        }
+      },
+      {
+        "frame": 760,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.919
+          },
+          "atZero": 0.919
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.874
+          },
+          "atZero": 0.874
+        }
+      },
+      {
+        "frame": 900,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.919
+          },
+          "atZero": 0.919
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.91
+          },
+          "atZero": 0.91
+        }
+      },
+      {
+        "frame": 990,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.919
+          },
+          "atZero": 0.919
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.934
+          },
+          "atZero": 0.934
+        }
+      }
+    ]
+  },
+  {
+    "slot": "nes-701f4d4-赤色要塞",
+    "title": "赤色要塞",
+    "frames": [
+      {
+        "frame": 60,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.481
+          },
+          "atZero": 0.481
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.98
+          },
+          "atZero": 0.98
+        }
+      },
+      {
+        "frame": 120,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.481
+          },
+          "atZero": 0.481
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.979
+          },
+          "atZero": 0.979
+        }
+      },
+      {
+        "frame": 200,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.772
+          },
+          "atZero": 0.772
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.764
+          },
+          "atZero": 0.764
+        }
+      },
+      {
+        "frame": 320,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.772
+          },
+          "atZero": 0.772
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.764
+          },
+          "atZero": 0.764
+        }
+      },
+      {
+        "frame": 400,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.694
+          },
+          "atZero": 0.694
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.882
+          },
+          "atZero": 0.882
+        }
+      },
+      {
+        "frame": 500,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.682
+          },
+          "atZero": 0.682
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.867
+          },
+          "atZero": 0.867
+        }
+      },
+      {
+        "frame": 620,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.629
+          },
+          "atZero": 0.629
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.866
+          },
+          "atZero": 0.866
+        }
+      },
+      {
+        "frame": 760,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.887
+          },
+          "atZero": 0.887
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.893
+          },
+          "atZero": 0.893
+        }
+      },
+      {
+        "frame": 900,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.203
+          },
+          "atZero": 0.203
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": -4,
+            "iou": 0.689
+          },
+          "atZero": 0.656
+        }
+      },
+      {
+        "frame": 990,
+        "green": {
+          "best": {
+            "dx": 4,
+            "dy": 0,
+            "iou": 0.204
+          },
+          "atZero": 0.179
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0.677
+          },
+          "atZero": 0.638
+        }
+      }
+    ]
+  },
+  {
+    "slot": "nes-1a4d476-雪人兄弟_简_",
+    "title": "雪人兄弟 (简)",
+    "frames": [
+      {
+        "frame": 60,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 120,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 200,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 320,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 400,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 500,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 620,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 760,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 900,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 990,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      }
+    ]
+  },
+  {
+    "slot": "nes-8c556ef-坦克大战_简_",
+    "title": "坦克大战 (简)",
+    "frames": [
+      {
+        "frame": 60,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.159
+          },
+          "atZero": 0.159
+        }
+      },
+      {
+        "frame": 120,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.997
+          },
+          "atZero": 0.997
+        }
+      },
+      {
+        "frame": 200,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.113
+          },
+          "atZero": 0.113
+        }
+      },
+      {
+        "frame": 320,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.113
+          },
+          "atZero": 0.113
+        }
+      },
+      {
+        "frame": 400,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.124
+          },
+          "atZero": 0.124
+        }
+      },
+      {
+        "frame": 500,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.125
+          },
+          "atZero": 0.125
+        }
+      },
+      {
+        "frame": 620,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.125
+          },
+          "atZero": 0.125
+        }
+      },
+      {
+        "frame": 760,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.134
+          },
+          "atZero": 0.134
+        }
+      },
+      {
+        "frame": 900,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.16
+          },
+          "atZero": 0.16
+        }
+      },
+      {
+        "frame": 990,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.16
+          },
+          "atZero": 0.16
+        }
+      }
+    ]
+  },
+  {
+    "slot": "nes-b903a97-松鼠大作战_简_",
+    "title": "松鼠大作战 (简)",
+    "frames": [
+      {
+        "frame": 60,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 120,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 200,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 320,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 400,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 500,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 620,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 760,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 900,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 990,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      }
+    ]
+  },
+  {
+    "slot": "nes-02ade1c-双截龙2_-_复仇_简_",
+    "title": "双截龙2 - 复仇 (简)",
+    "frames": [
+      {
+        "frame": 60,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        }
+      },
+      {
+        "frame": 120,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 200,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 320,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 400,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 500,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 620,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 760,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 900,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 990,
+        "green": {
+          "best": {
+            "dx": -8,
+            "dy": -8,
+            "iou": 0
+          },
+          "atZero": 0
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      }
+    ]
+  },
+  {
+    "slot": "starpilot-星光试航_Star_Pilot",
+    "title": "星光试航 Star Pilot",
+    "frames": [
+      {
+        "frame": 60,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 120,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 200,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 320,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.333
+          },
+          "atZero": 0.333
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.985
+          },
+          "atZero": 0.985
+        }
+      },
+      {
+        "frame": 400,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.333
+          },
+          "atZero": 0.333
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 0.989
+          },
+          "atZero": 0.989
+        }
+      },
+      {
+        "frame": 500,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 620,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 760,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 900,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      },
+      {
+        "frame": 990,
+        "green": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        },
+        "edge": {
+          "best": {
+            "dx": 0,
+            "dy": 0,
+            "iou": 1
+          },
+          "atZero": 1
+        }
+      }
+    ]
+  }
+]

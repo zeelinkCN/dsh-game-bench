@@ -48,6 +48,7 @@ node run.mjs
 
 ## mock Host（`server.mjs`）
 
+- 手柄模块：`/game-bench/api/gamepads.js`、`/gamepad-settings.js` 静态路由（文件存在才 200；`GB_GAMEPADS`/`GB_GAMEPAD_SETTINGS` 可覆盖）。
 - 内置清单：与 Host 一致地合并 `../games/builtin.json`（公开 demo）+ `../games/builtin.local.json`
   （本机私有 7 款，gitignore），只保留文件存在的条目 → 本机 8 款；`/rom/<id>`、`/cover/<id>` 返回真实字节。
 - 市场 96 款：从 `../../.lead-tmp/gb/library`（catalog 1131 款 + store 7 个合集）切片，含
@@ -76,10 +77,15 @@ node run.mjs
 | `00-library-dark.png` | 游戏库（深色，内置 demo + 本机私有 7 款，共 8 张，含继续上次 hero） |
 | `11-sidebar-entry.png` | 侧栏入口 6× 放大 |
 | `01-player-start-overlay.png` | 播放器「点击开始」遮罩（CRT 扫描线） |
-| `02-player-running.png` | 真实 NES 画面运行中（优先本机经典：超级玛丽 title）+ 底部控制条（fit 4:3） |
-| `02b-player-stretch.png` `02c-player-pixel.png` `02d-player-fullscreen.png` | 画面模式：铺满 / 像素整数倍 / 真实全屏（CDP 手势触发 requestFullscreen） |
+| `02-player-running.png` | 真实 NES 画面运行中（优先本机经典：超级玛丽 title）+ 底部控制条（默认 pixel 整数倍） |
+| `02b-player-stretch.png` `02c-player-pixel.png` `02d-player-fullscreen.png` | 画面模式：铺满 / 切回 pixel 整数倍 / 真实全屏（CDP 手势触发 requestFullscreen） |
 | `02e-player-crt.png` | 手动开启 CRT 滤镜（默认关闭） |
 | `16-settings.png` | 设置页（画面模式三选一） |
+| `02f-controls-hidden.png` `02g-controls-visible.png` `02h-fullscreen-hidden.png` | 控制条自动隐藏 / 底部唤出 / 全屏隐藏 |
+| `02i-menu-context.png` `02j-menu-no-saves.png` | 库卡右键菜单（fixed 定位）/ 无存档空态 |
+| `02k-player-pixel-dpr1.png` | 默认 pixel 模式 DPR=1 物理像素整数倍画面 |
+| `17-settings-gamepad.png` | 设置页手柄面板（Pro 标准映射 / JoyCon 需校准 / 死区 / 校准入口） |
+| `18-gamepad-calibrating.png` | 手柄校准进行态（输入可视化） |
 | `03-keyboard.png` | 键盘输入后画面 |
 | `05-save.png` | 存档到槽位 1（toast「已存入存档位 1」） |
 | `06-load-restored.png` | 重置后读档恢复 |
@@ -97,15 +103,15 @@ node run.mjs
 ## mock Host vs 真实 Host
 
 `run.mjs` 验的是**真实 client.js / engine.js** 与 mock Host；真实 Host 路由（GitHub 下载、SHA 校验、
-settings 权限、鉴权降级）由 `../server/selftest.mjs` 覆盖，QA 复跑：**127 PASS / 0 FAIL / 1 SKIP**
+settings 权限、鉴权降级、手柄静态路由）由 `../server/selftest.mjs` 覆盖，QA 复跑：**133 PASS / 0 FAIL / 1 SKIP**
 （SKIP＝资源库当前为公开仓库，私有仓库匿名用例不适用）。
 
 ## 三套验收的分工
 
 | 脚本 | 被测对象 | 环境 | 结果（最近一次） |
 | --- | --- | --- | --- |
-| `run.mjs` | 真实 client.js + engine.js/jsnes | 真实 Chrome + **mock Host** | PASS 99 / FAIL 0 |
-| `real-api.mjs` | 真实 Host 路由（已安装插件） | 真实 DSH 进程 + 真实 GitHub | PASS 35 / FAIL 0 |
+| `run.mjs` | 真实 client.js + engine.js/jsnes + gamepads.js | 真实 Chrome + **mock Host** | PASS 182 / FAIL 0 |
+| `real-api.mjs` | 真实 Host 路由（已安装插件） | 真实 DSH 进程 + 真实 GitHub | PASS 35 / FAIL 2（手柄静态路由需重装插件后转绿，见交付报告） |
 | `real-page.mjs` | 真实 DSH 页面像素级 | 真实桌面窗口 | **BLOCKED**（根 URL 需 token） |
 | `../server/selftest.mjs` | Host 路由（临时数据目录） | 真实 GitHub | 见交付报告 |
 
@@ -117,6 +123,17 @@ settings 权限、鉴权降级）由 `../server/selftest.mjs` 覆盖，QA 复跑
 7 款经典 ROM 在 `games/builtin.local.json`（`.gitignore` 排除）。Host 合并两份清单，所以：
 - 本机：内置 8 款（1 demo + 7 经典），截图/断言均按此；
 - 干净 clone：内置 1 款 demo，验收脚本按 `/library.builtinCount` **动态**校验（不写死 7/8）。
+
+## 本轮新增覆盖（2026-11-09）
+
+- `[5b]` 控制条自动隐藏：窗口/全屏 2.5s 隐藏、底部 100px/顶部 48px/触屏唤出、游戏 keydown 不唤出、暂停/存档面板常显、
+  隐藏时 opacity/pointer-events 真实生效、rAF 继续、退出后 window/document/player 监听净增 0
+- `[5c]` 库卡右键菜单：fixed 定位、Esc/外部关闭、单菜单、普通 click 仍直接启动、重新开始不读档、
+  从存档继续 `loadState` 字节与 IndexedDB 完全一致、`[data-gb-no-saves]` 空态、savedSlots 时间 = `timeText(updatedAt)`
+- `[5d]` 手柄输入：fake 两台标准手柄 → 1P/2P 分离、A/START/RIGHT 边沿去抖、`ui.padProfiles` 字段
+- `[5e]` 手柄设置页：标准 Pro + raw JoyCon 设备面板、合并 JoyCon 开关写 `ui.padPaired`、校准入口/进行态/取消 notice、无 console.error
+- `[8b]` 渲染缩放诊断：canvas 无 CSS transform/zoom、image-rendering、pixel 模式 256/240 整数倍、DPR=2 设备像素对齐、
+  fit 模式缩放比例记录（4:3 横向拉伸 1.25x，非整数倍是 8px tile 裂缝的观感来源；建议用设备像素整数倍策略）
 
 ## 已知局限
 

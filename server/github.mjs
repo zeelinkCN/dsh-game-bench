@@ -512,7 +512,7 @@ export async function ghApiFetch({ repo, path, kind = 'asset', ref = REF, timeou
 
 /**
  * 对冲请求：primary（https）超过 delayMs 还没回就并行启动 fallback（gh），谁先成功用谁。
- * 兜底也失败（NETWORK）时立刻取消慢主路径判负，避免用户干等 45s。
+ * 两条路径并发后以首个成功结果为准；一条失败时会等待另一条，避免短暂的 gh 故障误杀仍可成功的 HTTPS。
  * 用于 900KB 的目录文件，网络抖动时可以把 30s+ 压缩到 ~5-20s。
  * @returns {Promise<{ value: Buffer, transport: 'https'|'gh' }>}
  */
@@ -535,21 +535,18 @@ function hedgeFetch({ primary, fallback, delayMs, label = '', log = null, cancel
       fallbackStarted = true
       safeLog(log, `[hedge] ${label} 超过 ${delayMs}ms 未完成，启动 gh 兜底`)
       fallback().then(
-        (value) => settle(null, value, 'gh'),
-        (err) => {
-          fallbackError = err
-          safeLog(log, `[hedge] gh 兜底失败：${String(err?.code || err?.message || err).slice(0, 80)}`)
-          if (primaryError) {
-            settle(primaryError)
-            return
-          }
-          // 兜底已给出结论：不再等慢主路径（取消它，让上层重试/换传输）
+        (value) => {
           try {
             if (typeof cancelPrimary === 'function') cancelPrimary()
           } catch {
             /* 忽略 */
           }
-          settle(fallbackError)
+          settle(null, value, 'gh')
+        },
+        (err) => {
+          fallbackError = err
+          safeLog(log, `[hedge] gh 兜底失败：${String(err?.code || err?.message || err).slice(0, 80)}`)
+          if (primaryError) settle(primaryError)
         },
       )
     }
@@ -559,8 +556,13 @@ function hedgeFetch({ primary, fallback, delayMs, label = '', log = null, cancel
       (value) => settle(null, value, 'https'),
       (err) => {
         primaryError = err
-        if (fallbackStarted) settle(fallbackError || err)
-        else settle(err)
+        // 权限、404、内容校验等确定性错误不能被另一套本机凭据掩盖；只有网络故障才走传输兜底。
+        if (err?.code !== 'NETWORK') {
+          settle(err)
+          return
+        }
+        if (!fallbackStarted) startFallback()
+        else if (fallbackError) settle(err)
       },
     )
   })
@@ -618,10 +620,11 @@ export async function fetchRepoFile({
     const startedAt = Date.now()
     try {
       if (transport === 'https') {
+        const abortController = new AbortController()
         const primary = async () => {
           let res
           try {
-            res = await httpGetBytes({ url, headers, timeoutMs, maxBytes })
+            res = await httpGetBytes({ url, headers, timeoutMs, maxBytes, signal: abortController.signal })
           } catch (err) {
             throw asNetworkError(err)
           }
@@ -632,7 +635,7 @@ export async function fetchRepoFile({
         }
 
         // 目录/市场配置这类大文件：https 6s 未完成就并行用 gh 兜底，取先完成的
-        if (kind === 'catalog') {
+        if (kind === 'catalog' && !useApi) {
           const ghCommand = await resolveGhCommand(log)
           if (ghCommand) {
             const { value, transport: winner } = await hedgeFetch({
@@ -649,6 +652,7 @@ export async function fetchRepoFile({
               delayMs: HEDGE_DELAY,
               label: rel,
               log,
+              cancelPrimary: () => abortController.abort(),
             })
             preferredTransport = winner
             logTransport(log, winner, { rel, bytes: value.length, ms: Date.now() - startedAt, kind })

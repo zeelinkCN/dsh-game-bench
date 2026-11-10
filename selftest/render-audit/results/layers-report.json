@@ -1,0 +1,21 @@
+{
+  "game": "赤色要塞 (Jackal, mapper 2)",
+  "frame": 620,
+  "pixels": {
+    "total": 61440,
+    "bg": 58886,
+    "sprite": 2474,
+    "spriteVisibleOverBgTransparent": 2
+  },
+  "spriteOam": {
+    "evaluationNote": "per-scanline secondary OAM（jsnes 2.1.0 逐行精灵评估结果）",
+    "maxSpritesPerScanline": 8,
+    "scanlinesWithSprites": 112
+  },
+  "checks": {
+    "spritePixelsOutsideOamIntervals": 0,
+    "spriteViolationSamples": [],
+    "bgRowsWithTransparentHoles": 240
+  },
+  "outDir": "dsh-game-bench/selftest/render-audit/out/layers"
+}
